@@ -30,7 +30,6 @@
 #include <GUIConstantsEx.au3>
 #include <WindowsConstants.au3>
 #include <Constants.au3>
-#include <LCDHDSaveKey.au3>
 #include <File.au3>
 
 ;******************************************************************************
