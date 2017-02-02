@@ -783,7 +783,7 @@ Func SendToCorrections()            ; INITIATE QUEUE TO CORRECTIONS
 	    $src = $homevisitorPath & "\" & GetVisitorSelected() & "\" & $tosupervisorPath
 	EndIf
 	$dst = $homevisitorPath & "\" & GetVisitorSelected() & "\" & $correctionPath
-	QueueToFolder($src,$dst,"from '" & GetVisitorSelected() & "' to data processing",False)
+	QueueToFolder($src,$dst,"from '" & GetVisitorSelected() & "' to corrections",False)
 EndFunc   ;==>QueueToDataProcessing
 
 Func QueueMeToDataProcessing()          ; INITIATE QUEUE TO DATA PROCESSING (FROM MY SCREEN)
