@@ -6,7 +6,7 @@
 ; COPYRIGHT (C) 2016-2017
 ; BY THE LAKE CUMBERLAND DISTRICT HEALTH DEPARTMENT (www.lcdhd.org)
 ; ORIGINAL CODE BY DANIEL MCFEETERS (www.fiforms.net)
-; LATEST VERSION AVAILABLE FROM https://oss.lcdhd.org
+; LATEST VERSION AVAILABLE FROM https://oss.lcdhd.org/handsbox/
 ;
 ; This program is free software; you can redistribute it and/or
 ; modify it under the terms of the GNU General Public License

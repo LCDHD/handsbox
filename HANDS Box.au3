@@ -1,7 +1,7 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=hands-start-icon.ico
 #AutoIt3Wrapper_Res_Description=HANDS Box - Various Scripts to automate EMR Processing for the HANDS Program
-#AutoIt3Wrapper_Res_Fileversion=1.2.8
+#AutoIt3Wrapper_Res_Fileversion=1.2.9
 #AutoIt3Wrapper_Res_LegalCopyright=Free Software under GNU GPL, (c) 2016-2017 by Lake Cumberland District Health Department
 #AutoIt3Wrapper_Res_Language=1033
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -12,7 +12,7 @@
 ; COPYRIGHT (C) 2016-2017
 ; BY THE LAKE CUMBERLAND DISTRICT HEALTH DEPARTMENT (www.lcdhd.org)
 ; ORIGINAL CODE BY DANIEL MCFEETERS (www.fiforms.net)
-; LATEST VERSION AVAILABLE FROM https://oss.lcdhd.org
+; LATEST VERSION AVAILABLE FROM https://oss.lcdhd.org/handsbox/
 ;
 ; This program is free software; you can redistribute it and/or
 ; modify it under the terms of the GNU General Public License
@@ -404,17 +404,19 @@ Func RunMain()             ; MAIN HANDS BOX WINDOW
 
 
 			; Supervision Form
-			GUICtrlCreateButton("New Supervision Form", 185, 450, 180, 40)
+			GUICtrlCreateButton("New Supervision Form", 185, 490, 180, 40)
 			GUICtrlSetOnEvent(-1, "NewSupervision")
 
 		    ; Supervision Form
-			GUICtrlCreateButton("Open Supervision Folder", 185, 490, 180, 40)
+			GUICtrlCreateButton("Open Supervision Folder", 365, 490, 180, 40)
 			GUICtrlSetOnEvent(-1, "OpenSupervision")
 
 		EndIf
 
 		; To Corrections
-		GUICtrlCreateButton("Open 'Needs Correction'", 185, 410, 180, 40)
+		GUICtrlCreateButton("Send To Corrections", 185, 410, 180, 40)
+		GUICtrlSetOnEvent(-1, "SendToCorrections")
+		GUICtrlCreateButton("Open 'Needs Correction'", 185, 450, 180, 40)
 		GUICtrlSetOnEvent(-1, "ReviewCorrections")
 
 		; Labels
@@ -747,6 +749,18 @@ Func QueueToDataProcessing()            ; INITIATE QUEUE TO DATA PROCESSING (FOR
 	;Triggered from the supervision screen. Move files over to the Data Processing folder.
 	$src = $homevisitorPath & "\" & GetVisitorSelected() & "\" & $tosupervisorPath
 	$dst = $homevisitorPath & "\" & GetVisitorSelected() & "\" & $todataPath
+	QueueToFolder($src,$dst,"from '" & GetVisitorSelected() & "' to data processing")
+EndFunc   ;==>QueueToDataProcessing
+
+Func SendToCorrections()            ; INITIATE QUEUE TO CORRECTIONS
+	;Triggered from the supervision/data screens. Move files over to the Data Processing folder.
+	$HANDSRole = IniRead($iniFile,"General","Role","Home Visitor")
+    if $HANDSRole = "Data Entry" Then
+	    $src = $homevisitorPath & "\" & GetVisitorSelected() & "\" & $todataPath
+	Else
+	    $src = $homevisitorPath & "\" & GetVisitorSelected() & "\" & $tosupervisorPath
+	EndIf
+	$dst = $homevisitorPath & "\" & GetVisitorSelected() & "\" & $correctionPath
 	QueueToFolder($src,$dst,"from '" & GetVisitorSelected() & "' to data processing")
 EndFunc   ;==>QueueToDataProcessing
 
