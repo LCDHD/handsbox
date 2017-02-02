@@ -668,7 +668,7 @@ EndFunc   ;==>CLOSEClicked
 
 ;************************* FOLDER QUEUE FUNCTIONS *****************************
 
-Func QueueToFolder($src,$dst,$purpose)  ; CREATE WINDOW TO CONFIRM FILE QUEUE
+Func QueueToFolder($src,$dst,$purpose,$selectAll)  ; CREATE WINDOW TO CONFIRM FILE QUEUE
     If ProcessCheck() Then
 		Return 1
 	EndIf
@@ -696,7 +696,9 @@ Func QueueToFolder($src,$dst,$purpose)  ; CREATE WINDOW TO CONFIRM FILE QUEUE
 		$i += 1
 		$t = FileGetTime($src & "\" & $aForms[$i])
 		GUICtrlCreateListViewItem($aForms[$i] & "|" & $t[1] & "/" & $t[2] & " at " & $t[3] & ":" & $t[4],$HANDSFolderList)
-	   _GUICtrlListView_SetItemChecked($HANDSFolderList,$i-1)
+		If($selectAll) Then
+	       _GUICtrlListView_SetItemChecked($HANDSFolderList,$i-1)
+		EndIf
 		;$strForms = $strForms & $aForms[$i] & @CRLF &  "                   (Modified " & $t[1] & "/" & $t[2] & " at " & $t[3] & ":" & $t[4] & ")" & @CRLF
 	WEnd
      _GUICtrlListView_SETColumnWidth($HANDSFolderList,0,$LVSCW_AUTOSIZE)
@@ -742,14 +744,14 @@ Func QueueToFilingQueue()               ; INITIATE QUEUE TO DATA PROCESSING FILI
 	DirCreate($rootPath & $workBase & $queueToChart)
 	$src = $homevisitorPath & "\" & GetVisitorSelected() & "\" & $todataPath
 	$dst = $rootPath & $workBase & $queueToChart
-	QueueToFolder($src,$dst,"from '" & GetVisitorSelected() & "' for filing")
+	QueueToFolder($src,$dst,"from '" & GetVisitorSelected() & "' for filing",True)
 EndFunc
 
 Func QueueToDataProcessing()            ; INITIATE QUEUE TO DATA PROCESSING (FOR OTHER HV's)
 	;Triggered from the supervision screen. Move files over to the Data Processing folder.
 	$src = $homevisitorPath & "\" & GetVisitorSelected() & "\" & $tosupervisorPath
 	$dst = $homevisitorPath & "\" & GetVisitorSelected() & "\" & $todataPath
-	QueueToFolder($src,$dst,"from '" & GetVisitorSelected() & "' to data processing")
+	QueueToFolder($src,$dst,"from '" & GetVisitorSelected() & "' to data processing",True)
 EndFunc   ;==>QueueToDataProcessing
 
 Func SendToCorrections()            ; INITIATE QUEUE TO CORRECTIONS
@@ -761,21 +763,21 @@ Func SendToCorrections()            ; INITIATE QUEUE TO CORRECTIONS
 	    $src = $homevisitorPath & "\" & GetVisitorSelected() & "\" & $tosupervisorPath
 	EndIf
 	$dst = $homevisitorPath & "\" & GetVisitorSelected() & "\" & $correctionPath
-	QueueToFolder($src,$dst,"from '" & GetVisitorSelected() & "' to data processing")
+	QueueToFolder($src,$dst,"from '" & GetVisitorSelected() & "' to data processing",False)
 EndFunc   ;==>QueueToDataProcessing
 
 Func QueueMeToDataProcessing()          ; INITIATE QUEUE TO DATA PROCESSING (FROM MY SCREEN)
 	;Triggered from the Supervisor's home visitor screen. Move files over to the Data Processing folder.
 	$src = $rootPath & $workBase & $workingPath
 	$dst = $rootPath & $workBase & $todataPath
-	QueueToFolder($src,$dst,"from my work in progress to data processing")
+	QueueToFolder($src,$dst,"from my work in progress to data processing",True)
 EndFunc   ;==>QueueToDataProcessing
 
 Func QueueToSupervisor()                ; INITIATE QUEUE TO SUPERVISOR
 	; Triggered from the Home Visitor screen. Move files to the Supervisor folder, and make a backup copy.
 	$src = $rootPath & $workBase & $workingPath
 	$dst = $rootPath & $workBase & $tosupervisorPath
-	QueueToFolder($src,$dst,"to supervisor")
+	QueueToFolder($src,$dst,"to supervisor",True)
 	RefreshMain()
 EndFunc   ;==>QueueToSupervisor
 
