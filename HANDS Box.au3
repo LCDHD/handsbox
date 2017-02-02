@@ -1,7 +1,7 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=hands-start-icon.ico
 #AutoIt3Wrapper_Res_Description=HANDS Box - Various Scripts to automate EMR Processing for the HANDS Program
-#AutoIt3Wrapper_Res_Fileversion=1.2.9
+#AutoIt3Wrapper_Res_Fileversion=1.2.10
 #AutoIt3Wrapper_Res_LegalCopyright=Free Software under GNU GPL, (c) 2016-2017 by Lake Cumberland District Health Department
 #AutoIt3Wrapper_Res_Language=1033
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -685,12 +685,16 @@ Func QueueToFolder($src,$dst,$purpose,$selectAll)  ; CREATE WINDOW TO CONFIRM FI
 	          & @CRLF & @CRLF & _
 			  "Please confirm that you have reviewed and signed every form listed below:",10,10)
 
-	GUICtrlCreateButton("Queue Selected Files",5,340,270,50)
+	GUICtrlCreateButton("Queue Selected Files",5,360,270,35)
 	GUICtrlSetOnEvent(-1,"QueueToFolderFinish")
-	GUICtrlCreateButton("Cancel",275,340,270,50)
+	GUICtrlCreateButton("Cancel",275,360,270,35)
 	GUICtrlSetOnEvent(-1,"QueueToFolderCancel")
+	GUICtrlCreateButton("Select All",275,330,100,30)
+	GUICtrlSetOnEvent(-1,"QueueToFolderSelectAll")
+	GUICtrlCreateButton("Select None",175,330,100,30)
+	GUICtrlSetOnEvent(-1,"QueueToFolderSelectNone")
 
-    global $HANDSFolderList = GUICtrlCreateListView("File Name | Modified",5,50,540,280,-1,$LVS_EX_CHECKBOXES)
+    global $HANDSFolderList = GUICtrlCreateListView("File Name | Modified",5,50,540,270,-1,$LVS_EX_CHECKBOXES)
     $i = 0
 	while $i < $aForms[0]
 		$i += 1
@@ -710,6 +714,22 @@ Func QueueToFolder($src,$dst,$purpose,$selectAll)  ; CREATE WINDOW TO CONFIRM FI
 
 	GUISetState(@SW_SHOW,$HANDSFolderQueueConfirm)
 
+EndFunc
+
+Func QueueToFolderSelectAll()
+    $i = 0
+	while $i < $aForms[0]
+		_GUICtrlListView_SetItemChecked($HANDSFolderList,$i)
+		$i += 1
+	WEnd
+EndFunc
+
+Func QueueToFolderSelectNone()
+    $i = 0
+	while $i < $aForms[0]
+		_GUICtrlListView_SetItemChecked($HANDSFolderList,$i,False)
+		$i += 1
+	WEnd
 EndFunc
 
 Func QueueToFolderCancel()              ; CANCEL FILE QUEUE
