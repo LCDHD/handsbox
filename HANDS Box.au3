@@ -1,7 +1,7 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=hands-start-icon.ico
 #AutoIt3Wrapper_Res_Description=HANDS Box - Various Scripts to automate EMR Processing for the HANDS Program
-#AutoIt3Wrapper_Res_Fileversion=1.2.12
+#AutoIt3Wrapper_Res_Fileversion=1.2.13
 #AutoIt3Wrapper_Res_LegalCopyright=Free Software under GNU GPL, (c) 2016-2017 by Lake Cumberland District Health Department
 #AutoIt3Wrapper_Res_Language=1033
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -649,10 +649,11 @@ Func ShowAbout()           ; SHOW ABOUT WINDOW
 		)
 EndFunc
 
-Func GetVisitorSelected()  ; RETURN WHICH VISITOR IS SELECTED ON HOME VISITOR SCREEN
+Func GetVisitorSelected()  ; RETURN WHICH VISITOR IS SELECTED ON SUPERVISOR/DATA ENTRY SCREEN
 	$visitorIndex = GetListFirstItemSelected($visitorlist)
 	if $visitorIndex = -1 Then
-		$visitorIndex = 0
+	    MsgBox(0,"No Home Visitor Selected","Please Select a Home Visitor from the list.")
+	    Return Null
 	EndIf
 	Return $visitors[$visitorIndex + 1]
 EndFunc
@@ -688,6 +689,9 @@ EndFunc   ;==>CLOSEClicked
 
 Func QueueToFolder($src,$dst,$purpose,$selectAll)  ; CREATE WINDOW TO CONFIRM FILE QUEUE
     If ProcessCheck() Then
+		Return 1
+	EndIf
+	If Not FileExists($src) Then
 		Return 1
 	EndIf
     CheckBlankFiles()
@@ -786,6 +790,9 @@ Func QueueToFilingQueue()               ; INITIATE QUEUE TO DATA PROCESSING FILI
 EndFunc
 
 Func QueueToDataProcessing()            ; INITIATE QUEUE TO DATA PROCESSING (FOR OTHER HV's)
+	If Not GetVisitorSelected() Then
+		Return 1
+	EndIf
 	;Triggered from the supervision screen. Move files over to the Data Processing folder.
 	$src = $homevisitorPath & "\" & GetVisitorSelected() & "\" & $tosupervisorPath
 	$dst = $homevisitorPath & "\" & GetVisitorSelected() & "\" & $todataPath
@@ -793,6 +800,9 @@ Func QueueToDataProcessing()            ; INITIATE QUEUE TO DATA PROCESSING (FOR
 EndFunc   ;==>QueueToDataProcessing
 
 Func SendToCorrections()            ; INITIATE QUEUE TO CORRECTIONS
+	If Not GetVisitorSelected() Then
+		Return 1
+	EndIf
 	;Triggered from the supervision/data screens. Move files over to the Data Processing folder.
 	$HANDSRole = IniRead($iniFile,"General","Role","Home Visitor")
     if $HANDSRole = "Data Entry" Then
@@ -904,10 +914,6 @@ Func FileToCharts()                     ; FILE QUEUED FORMS INTO THE CHARTS, BAS
 	EndIf
 EndFunc
 
-
-
-
-
 ;************************ HOME VISITOR GUI FUNCTIONS **************************
 
 Func SelectVisitorLabels()              ; REFRESH THE LABEL LIST AFTER SELECTING A HOME VISITOR
@@ -937,28 +943,34 @@ Func DeleteLabel()                      ; DELETE SELECTED LABEL
 	EndIf
 EndFunc
 
+Func OpenIfExists($path)
+	If FileExists($path) Then
+		ShellExecute($path)
+	EndIf
+EndFunc
+
 Func ShowLabels()                       ; OPEN LABELS FOLDER
-	ShellExecute($labelsSelectPath)
+	OpenIfExists($labelsSelectPath)
 EndFunc
 
 Func ViewWorkInProgress()               ; OPEN WORK IN PROGRESS FOLDER
-	ShellExecute($rootPath & $workBase & $workingPath)
+	OpenIfExists($rootPath & $workBase & $workingPath)
 EndFunc   ;==>ViewWorkInProgress
 
 Func ViewDataProcessing()               ; OPEN TO DATA PROCESSING FOLDER
-	ShellExecute($rootPath & $workBase & $todataPath)
+	OpenIfExists($rootPath & $workBase & $todataPath)
 EndFunc   ;==>ViewDataProcessing
 
 Func ViewNeedsCorrection()              ; OPEN CORRECTIONS FOLDER
-	ShellExecute($rootPath & $workBase & $correctionPath)
+	OpenIfExists($rootPath & $workBase & $correctionPath)
 EndFunc   ;==>ViewNeedsCorrection
 
 Func ViewSupervisor()                   ; OPEN TO SUPERVISOR FOLDER
-	ShellExecute($rootPath & $workBase & $tosupervisorPath)
+	OpenIfExists($rootPath & $workBase & $tosupervisorPath)
 EndFunc   ;==>ViewSupervisor
 
 Func ViewTrackingForm()                 ; OPEN TRACKING FORM FOLDER
-	ShellExecute($rootPath & $workBase & $trackingPath)
+	OpenIfExists($rootPath & $workBase & $trackingPath)
 EndFunc   ;==>ViewTrackingForm
 
 Func NewTrackingForm()                  ; COPY NEW EXCEL TRACKING FORM TEMPLATE FOR CURRENTLY SELECTED FAMILY
@@ -1235,31 +1247,36 @@ Func OpenQueueToChart()    ; OPEN THE CHART QUEUE
 EndFunc   ;==>OpenQueueToChart
 
 Func ReviewDataProcessing() ; Open "To Data Processing" folder  for the selected home visitor
-	ShellExecute($homevisitorPath & "\" & GetVisitorSelected() & "\" & $todataPath)
+	OpenIfExists($homevisitorPath & "\" & GetVisitorSelected() & "\" & $todataPath)
 EndFunc
 
 Func ReviewSupervisor()     ; Open "To Supervisor" folder for the selected home visitor
-	ShellExecute($homevisitorPath & "\" & GetVisitorSelected() & "\" & $tosupervisorPath)
+	OpenIfExists($homevisitorPath & "\" & GetVisitorSelected() & "\" & $tosupervisorPath)
 EndFunc
 
 Func ReviewCorrections()	; Open Corrections folder for the selected home visitor
-	ShellExecute($homevisitorPath & "\" & GetVisitorSelected() & "\" & $correctionPath)
+	OpenIfExists($homevisitorPath & "\" & GetVisitorSelected() & "\" & $correctionPath)
 EndFunc
 
 Func ReviewLogs()           ; Open Logs folder  for the selected home visitor
-	ShellExecute($homevisitorPath & "\" & GetVisitorSelected() & "\" & $logPath)
+	OpenIfExists($homevisitorPath & "\" & GetVisitorSelected() & "\" & $logPath)
 EndFunc
 
 Func ReviewTracking()       ; Open Tracking Form folder  for the selected home visitor
-	ShellExecute($homevisitorPath & "\" & GetVisitorSelected() & "\" & $trackingPath)
+	OpenIfExists($homevisitorPath & "\" & GetVisitorSelected() & "\" & $trackingPath)
 EndFunc
 
 Func OpenSupervision()      ; Open the supervision folder for the selected home visitor
-	DirCreate($homevisitorPath & "\" & GetVisitorSelected() & "\" & $supervisionPath)
-	ShellExecute($homevisitorPath & "\" & GetVisitorSelected() & "\" & $supervisionPath)
+	If GetVisitorSelected() Then
+		DirCreate($homevisitorPath & "\" & GetVisitorSelected() & "\" & $supervisionPath)
+		ShellExecute($homevisitorPath & "\" & GetVisitorSelected() & "\" & $supervisionPath)
+	EndIf
 EndFunc
 
 Func NewSupervision()       ; Create new supervision form for selected home visitor
+	If Not GetVisitorSelected() Then
+		Return 1
+	EndIf
 	FileChangeDir($rootPath & $supervisionFormsPath)
 	$file = FileOpenDialog("Select Supervision Form Template",@WorkingDir,"PDF Files (*.pdf)")
 	If @error = 1 Then
