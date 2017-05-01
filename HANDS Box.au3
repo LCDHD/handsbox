@@ -1,7 +1,7 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=hands-start-icon.ico
 #AutoIt3Wrapper_Res_Description=HANDS Box - Various Scripts to automate EMR Processing for the HANDS Program
-#AutoIt3Wrapper_Res_Fileversion=1.2.10
+#AutoIt3Wrapper_Res_Fileversion=1.2.12
 #AutoIt3Wrapper_Res_LegalCopyright=Free Software under GNU GPL, (c) 2016-2017 by Lake Cumberland District Health Department
 #AutoIt3Wrapper_Res_Language=1033
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -229,20 +229,22 @@ Func NewOrEditLabel($edit)   ; CREATE/EDIT LABEL WINDOW
 	$labelFields[5] = GUICtrlCreateInput("", 130, 160, 200, 20)
 	GUICtrlCreateLabel("Middle Initial: ", 10, 190)
 	$labelFields[6] = GUICtrlCreateInput("", 130, 190, 50, 20)
+
 	GUICtrlCreateLabel("Billing Code: ", 10, 220)
-	$labelFields[7] = GUICtrlCreateInput("", 130, 220, 50, 20)
+	$labelFields[7] = GUICtrlCreateCombo("",130,220,200,20)
+	;$labelFields[7] = GUICtrlCreateInput("", 130, 220, 50, 20)
 	$labelFields[8] = GUICtrlCreateInput("", 220, 410, 20, 20) ; Hidden field for _LCDHD_NAME
 	$labelFields[9] = GUICtrlCreateInput("@_LCDHD_FORMDATE", 220, 400, 20, 20) ; Hidden field for _LCDHD_FORMDATE
 
-    GUICtrlCreateLabel("FT - First Time Dad",200,220)
-	GUICtrlSetColor(-1,0x0000FF)
-    GUICtrlCreateLabel("NA - KMA Not Active",200,235)
-	GUICtrlSetColor(-1,0xFF0000)
-    GUICtrlCreateLabel("TO - Tobacco",200,250)
-	GUICtrlSetColor(-1,0x009911)
-    GUICtrlCreateLabel("MG - Multi gravida",200,265)
-	GUICtrlSetColor(-1,0x888800)
-    GUICtrlCreateLabel("PG - Prima gravida",200,280)
+    ;GUICtrlCreateLabel("FT - First Time Dad",200,220)
+	;GUICtrlSetColor(-1,0x0000FF)
+    ;GUICtrlCreateLabel("NA - KMA Not Active",200,235)
+	;GUICtrlSetColor(-1,0xFF0000)
+    ;GUICtrlCreateLabel("TO - Tobacco",200,250)
+	;GUICtrlSetColor(-1,0x009911)
+    ;GUICtrlCreateLabel("MG - Multi gravida",200,265)
+	;GUICtrlSetColor(-1,0x888800)
+    ;GUICtrlCreateLabel("PG - Prima gravida",200,280)
 
     if $edit Then
 	    GUICtrlCreateButton("Modify Label", 1, 300, 338, 30)
@@ -253,7 +255,10 @@ Func NewOrEditLabel($edit)   ; CREATE/EDIT LABEL WINDOW
 	GUICtrlCreateButton("Cancel", 1, 330, 338, 30)
 	GUICtrlSetOnEvent(-1, "LabelCLOSEClicked")
 
-    if $edit Then
+	$billingcodes = FileRead($rootPath & $formsPath & "\billingcodes.txt")
+	$billingcodes = StringReplace($billingcodes,@CRLF,"|")
+
+	if $edit Then
 		local $aFields[0]
 		local $aValues[0]
 	    $labelSelected = $labels[$labelIndexSelected + 1]
@@ -266,10 +271,16 @@ Func NewOrEditLabel($edit)   ; CREATE/EDIT LABEL WINDOW
 		while $i < UBound($labelFieldsNames)
 			$idx = _ArraySearch($aFields,$labelFieldsNames[$i])
 			if $idx > -1 Then
-				GUICtrlSetData($labelFields[$i],$aValues[$idx])
+				if $i = 7 Then
+					GUICtrlSetData($labelFields[$i], $aValues[$idx] & "|" & $billingcodes, $aValues[$idx])
+				Else
+				    GUICtrlSetData($labelFields[$i],$aValues[$idx])
+				EndIf
 			EndIf
 			$i += 1
 		Wend
+	Else
+		GUICtrlSetData($labelFields[7], $billingcodes, "")
 	EndIf
 	GUISetState(@SW_SHOW, $labelWindow)
 
@@ -297,12 +308,19 @@ Func LabelCreate()
 	local $i = 0
 	local $aFields[0]
 	local $aValues[0]
+	; Fix Billing Code
+
 	GUICtrlSetData($labelFields[8], GUICtrlRead($labelFields[4]) & ", " & GUICtrlRead($labelFields[5]) & " " & GUICtrlRead($labelFields[6]))
 	While $i < UBound($labelFields)
 		$v = GUICtrlRead($labelFields[$i])
 		if Not $v = "" Then
 			_ArrayAdd($aFields,$labelFieldsNames[$i])
-			_ArrayAdd($aValues,$v)
+			If StringInStr($v,"--") Then
+				;ConsoleWriteError("Stripping Dashes: "& StringStripWS(StringMid($v,1,StringInStr($v,"--") - 2),$STR_STRIPTRAILING) & @CRLF);
+				_ArrayAdd($aValues,StringStripWS(StringMid($v,1,StringInStr($v,"--") - 2),$STR_STRIPTRAILING))
+			Else
+			    _ArrayAdd($aValues,$v)
+			EndIf
 		EndIf
 		$i += 1
 	WEnd
