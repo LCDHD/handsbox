@@ -697,7 +697,7 @@ Func QueueToFolder($src,$dst,$purpose,$selectAll)  ; CREATE WINDOW TO CONFIRM FI
     CheckBlankFiles()
 	global $aForms = getPDFList($src,"*.pdf")
 	if $aForms[0] = 0 Then
-		MsgBox(0,"HANDS Box","There aren't any forms to queue for '" & GetVisitorSelected() & "'.")
+		MsgBox(0,"HANDS Box","There aren't any forms to queue.")
 		Return 1
 	EndIf
 
