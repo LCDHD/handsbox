@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=hands-start-icon.ico
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=HANDS Box - Various Scripts to automate EMR Processing for the HANDS Program
-#AutoIt3Wrapper_Res_Fileversion=1.2.14.0
+#AutoIt3Wrapper_Res_Fileversion=1.2.21.0
 #AutoIt3Wrapper_Res_LegalCopyright=Free Software under GNU GPL, (c) 2016-2017 by Lake Cumberland District Health Department
 #AutoIt3Wrapper_Res_Language=1033
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -547,8 +547,10 @@ Func RunMain()             ; MAIN HANDS BOX WINDOW
 	HANDSBoxBottomButtons()
 
 	; Charts Button
-	GUICtrlCreateButton("Open Charts", 430, 550, 170, 40)
+	GUICtrlCreateButton("My Charts", 430, 550, 80, 40)
 	GUICtrlSetOnEvent(-1, "ViewCharts")
+	GUICtrlCreateButton("Web Charts", 515, 550, 80, 40)
+	GUICtrlSetOnEvent(-1, "ViewWebCharts")
 
 	; Wait Around
 	GUISetState(@SW_SHOW)
@@ -661,6 +663,10 @@ EndFunc
 
 Func ViewCharts()           ; OPEN THE CHARTS FOLDER
 	ShellExecute($chartsFullPath)
+EndFunc
+
+Func ViewWebCharts()           ; OPEN THE CHARTS FOLDER
+	ShellExecute($webRoot)
 EndFunc
 
 Func ProcessCheck()        ; Check if any processes are running that could interfere with sync
@@ -841,14 +847,14 @@ Func FileToCharts()                     ; FILE QUEUED FORMS INTO THE CHARTS, BAS
 		MsgBox(0,"HANDS Supervisor Functions","There are not forms in the queue. Please open the queue first and put some forms into it.")
 		Return 1
 	EndIf
-	If Not FileExists($chartsFullPath) Then
+	If Not FileExists($webRoot) Then
 		MsgBox(0,"HANDS Supervisor Functions","I cannot access the charts at the moment. Please try opening the charts folder first.")
 		Return 1
 	EndIf
 	ProgressSet(5,"Scanning Forms to File")
 	$formsToFile = _FileListToArray($rootPath & $workBase & $queueToChart)
 	ProgressSet(10,"Scanning Charts")
-    $charts = _FileListToArrayRec($chartsFullPath,"*",$FLTA_FOLDERS,-7,$FLTAR_SORT,$FLTAR_FULLPATH)
+    $charts = _FileListToArrayRec($webRoot,"*",$FLTA_FOLDERS,-7,$FLTAR_SORT,$FLTAR_FULLPATH)
     ;_ArrayDisplay($charts,"$charts")
 
 	;Build $chartnames and $chartfolders arrays for form destinations
@@ -1279,7 +1285,7 @@ Func NewSupervision()       ; Create new supervision form for selected home visi
 		Return 1
 	EndIf
 	FileChangeDir($rootPath & $supervisionFormsPath)
-	$file = FileOpenDialog("Select Supervision Form Template",@WorkingDir,"PDF Files (*.pdf)")
+	$file = FileOpenDialog("Select Supervision Form Template",@WorkingDir,"All Files (*.*)")
 	If @error = 1 Then
 		Return 1
 	EndIf
@@ -1288,7 +1294,8 @@ Func NewSupervision()       ; Create new supervision form for selected home visi
 	$sFileName = ""
 	$sExtension = ""
 	_PathSplit($file,$sDrive,$sDir,$sFileName,$sExtension)
-	$dst = $homevisitorPath & "\" & GetVisitorSelected() & "\" & $supervisionPath & "\S" & StringReplace(_NowCalcDate(),"/","-") & " " & GetVisitorSelected() & " - " & $sFileName & ".pdf"
+	$parsedname = ParseFormName($sFileName)
+	$dst = $homevisitorPath & "\" & GetVisitorSelected() & "\" & $supervisionPath & "\" & $parsedname[3] & StringReplace(_NowCalcDate(),"/","-") & " " & GetVisitorSelected() & " - " & $parsedname[1] & $sExtension
 	DirCreate($homevisitorPath & "\" & GetVisitorSelected() & "\" & $supervisionPath)
     FileCopy($file,$dst)
 	ShellExecute($dst)
