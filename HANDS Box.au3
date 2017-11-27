@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=hands-start-icon.ico
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=HANDS Box - Various Scripts to automate EMR Processing for the HANDS Program
-#AutoIt3Wrapper_Res_Fileversion=1.2.21.0
+#AutoIt3Wrapper_Res_Fileversion=1.2.22.0
 #AutoIt3Wrapper_Res_LegalCopyright=Free Software under GNU GPL, (c) 2016-2017 by Lake Cumberland District Health Department
 #AutoIt3Wrapper_Res_Language=1033
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -230,6 +230,7 @@ Func NewOrEditLabel($edit)   ; CREATE/EDIT LABEL WINDOW
 	$labelFields[5] = GUICtrlCreateInput("", 130, 160, 200, 20)
 	GUICtrlCreateLabel("Middle Initial: ", 10, 190)
 	$labelFields[6] = GUICtrlCreateInput("", 130, 190, 50, 20)
+	GUICtrlSetOnEvent($labelFields[6],"CheckMILength")
 
 	GUICtrlCreateLabel("Billing Code: ", 10, 220)
 	$labelFields[7] = GUICtrlCreateCombo("",130,220,200,20)
@@ -286,6 +287,12 @@ Func NewOrEditLabel($edit)   ; CREATE/EDIT LABEL WINDOW
 	GUISetState(@SW_SHOW, $labelWindow)
 
 EndFunc  ;==>NewOrEditLabel
+
+func CheckMILength()
+	$mi = GUICtrlRead($labelFields[6])
+	$mi = StringMid($mi,1,1)
+	GUICtrlSetData($labelFields[6],$mi)
+EndFunc
 
 Func RunNewLabel()         ; CALL NEW LABEL WINDOW
 	$labelEdit = ""
