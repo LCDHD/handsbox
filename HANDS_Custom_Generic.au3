@@ -4,27 +4,6 @@
 ; Customizations File
 ; Modify this with specific settings for your environment
 ;
-; COPYRIGHT (C) 2016 BY THE LAKE CUMBERLAND DISTRICT HEALTH DEPARTMENT
-; ORIGINAL CODE BY DANIEL MCFEETERS (www.fiforms.net)
-; LATEST VERSION AVAILABLE FROM https://oss.lcdhd.org/handsbox/
-;
-; This program is free software; you can redistribute it and/or
-; modify it under the terms of the GNU General Public License
-; as published by the Free Software Foundation; either version 2
-; of the License.
-;
-; This program is distributed in the hope that it will be useful,
-; but WITHOUT ANY WARRANTY; without even the implied warranty of
-; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-; GNU General Public License for more details.
-;
-; You should have received a copy of the GNU General Public License
-; along with this program; if not, write to the Free Software
-; Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-;
-; These license terms may also be modified by the LOCAL DISTRIBUTION EXCEPTION
-; described in the accompanying LICENSE.txt file.
-;
 ;******************************************************************************
 
 #include <GUIConstantsEx.au3>
@@ -36,23 +15,31 @@
 ;                          GLOBAL VARIABLES
 ;******************************************************************************
 
+
+;To embed PDFTk, uncomment the following 4 LINES,
+;and copy the referenced files into the source directory:
+
+;DirCreate($handsAppData)
+;FileInstall("pdftk.exe",$handsAppData & "\pdftk.exe")
+;FileInstall("libiconv2.dll",$handsAppData & "\libiconv2.dll")
+;$pdftk = $handsAppData & "\pdftk.exe"
+
+; Change to reference your own organization
 dim $CustomHANDSBoxVersion = "Generic 1.0"
 
-dim $HANDSBoxCopyright = "Copyright 2016-2017 by the Lake Cumberland District Health Department" & @CRLF & @CRLF & "All Rights Reserved. Unauthorized Distribution Prohibited." & @CRLF & "For information, call 1 (800) 928-4416, extension 1400."
+; Adjust this as needed, for example, by referencing your internal IT department and specifing any copyrighted software included.
+dim $HANDSBoxCopyright = "Software Distributed under the GNU GPL." & @CRLF & @CRLF & "For the latest version, see" & @CRLF & "https://github.com/LCDHD/handsbox"
 
-;dim $syncBatchFile = @TempDir & "\Sync Briefcase.ffs_batch"
+; Paths, adjust for your environment
 
 dim $rootPath = @UserProfileDir & "\Documents\HANDS Briefcase\"
 dim $formsPath = "HANDS Documents\Forms"
 dim $supervisionFormsPath = "HANDS Documents\Supervision Forms"
-
 dim $chartsFullPath = "H:\Charts"
-
 dim $homevisitorPath = "H:\Working Folders"
-
 dim $handsDocumentsPath = "H:\HANDS Documents"
-
 dim $workBase = "Working\"
+dim $webRoot = "H:\"
 
 dim $workingPath = "Work In Progress"
 dim $queueToChart = "Queue To Chart"
@@ -64,39 +51,23 @@ dim $labelsPath = "Labels"
 dim $logPath = "Logs"
 
 dim $supervisionPath = "Supervision"
-
 dim $handsAppData = @AppDataDir & "\HANDSBox\"
-
 dim $iniFile = $handsAppData & "hands_config.ini"
-
 dim $labelsSelectPath = $rootPath & $workBase & $labelsPath
 
-
-dim $exePath = $rootPath & $formsPath & "\" & "HANDS Box.exe"
-
 ; Field names that should be replaced with values from label
+; Adjust these ONLY if you are using different field names in your labels.
+; If you are using forms from LCDHD, leave these as is.
 dim $labelFieldsNames[10] = ["_LCDHD_FSW", "_LCDHD_SSN", "_LCDHD_CLID", "_LCDHD_DOB", "_LCDHD_LNAME", "_LCDHD_FNAME", "_LCDHD_MI", "_LCDHD_BILLING", "_LCDHD_NAME", "_LCDHD_FORMDATE"]
 
 ; Name of blank PDF file, referenced in the label FDF files
 dim $blankLabelName = "000 - Blank Label.pdf"
 
+; Processes which, if running, should prevent the Sync from firing
 dim $checkPDFProcess = ["NitroPDF.exe","Acrobat.exe","Acrord32.exe","Excel.exe"]
 
+; Set this to a random string for increase security
 dim $encConstant = "CHANGE ME" ; For encrypting the saved access key
-
-
-;PDF-TK is required for this to work.
-
-;Recommended: embed pdftk into the HANDS Box EXE
-;Uncomment these lines, and copy the referenced files into the source directory
-
-;DirCreate($handsAppData)
-;FileInstall("pdftk.exe",$handsAppData & "\pdftk.exe")
-;FileInstall("libiconv2.dll",$handsAppData & "\libiconv2.dll")
-;global $pdftk = $handsAppData & "\pdftk.exe"
-
-;Alternative Option: link to PDF-tk in program files
-global $pdftk = @ProgramFilesDir & '\PDFtk\bin\pdftk.exe'
 
 
 
@@ -105,12 +76,16 @@ global $pdftk = @ProgramFilesDir & '\PDFtk\bin\pdftk.exe'
 ;******************************************************************************
 
 Func SetupHANDS()
+	; A great place to put any scripts that should be run on every machine to set up the HANDS box in your envionment
 	If MsgBox($MB_YESNO, "HANDS Setup", "This procedure will set up the necessary folders and mapped drive(s) for the HANDS staff. Would you like to continue?") = $IDNO Then
 		Return 1
 	EndIf
 
-	;FIXME
+
 	;Set up mapped drives here
+	;RunWait(@ComSpec & " /c net use H: \\server\HANDS")
+
+	;Create a basic folder structure
 
 	DirCreate($rootPath & $workBase & $workingPath)
 	DirCreate($rootPath & $workBase & $correctionPath)
@@ -124,7 +99,8 @@ EndFunc   ;==>SetupHANDS
 
 
 Func RunHelp()
-	ShellExecute("https://secure.lcdhd.org/wiki/index.php/HANDS_EMR")
+	; Make this link to your own internal help page
+	ShellExecute("https://github.com/LCDHD/handsbox")
 EndFunc
 
 Func HANDSInit()
@@ -132,6 +108,8 @@ Func HANDSInit()
 EndFunc
 
 Func HANDSSetupScreen()
+	; Add your own custom buttons to the setup screen
+
 	GUICtrlCreateButton("Setup...", 50, 100, 300, 50)
 	GUICtrlSetOnEvent(-1, "SetupHANDS")
 
@@ -143,6 +121,8 @@ Func HANDSBoxBottomButtons()
 	GUICtrlSetOnEvent(-1, "RunSynchronize")
 	GUICtrlCreateButton("Advanced Compare/Sync", 600, 550, 195, 40)
 	GUICtrlSetOnEvent(-1, "EditSynchronize")
+
+	; Add more custom buttons to the bottom of the screen
 
 EndFunc
 
@@ -159,16 +139,6 @@ Func RunSynchronize()
 		Return 1
 	EndIf
 	HANDSLog("Sync","")
-	;If FileExists($handsAppData & "editsync.lock") Then
-	;    FileDelete($handsAppData & "editsync.lock")
-	;Else
-	;    ; Copy Logs from AppData to Local Briefcase
-	;    FileCopy($handsAppData & "Logs\*.csv",$rootPath & $workBase & $logPath & "\",$FC_OVERWRITE + $FC_CREATEPATH)
-	;EndIf
-	;FileDelete(@tempDir & "\HANDS_Synchronize.exe")
-	;FileInstall("HANDS_Synchronize.exe",@TempDir & "\HANDS_Synchronize.exe")
-	;ShellExecute(@TempDir & "\HANDS_Synchronize.exe")
-	;Exit 1
 
 	FileInstall("sync_working_folder.ffs_batch",@TempDir & "\sync_working_folder.ffs_batch",$FC_OVERWRITE)
 	ShellExecute(@TempDir & "\sync_working_folder.ffs_batch")
@@ -188,13 +158,7 @@ Func EditSynchronize()
     If ProcessCheck() Then
 		Return 1
 	EndIf
-	;FileDelete($syncBatchFile)
-	;FileInstall("Sync Briefcase.ffs_batch",$syncBatchFile)
-	;ShellExecute($syncBatchFile,"","",$SHEX_EDIT)
-	;$f = FileOpen($handsAppData & "editsync.lock",$FO_OVERWRITE)
-	;FileWrite($f,"TRUE")
-	;FileClose($f)
-	;Exit 1
+
 	FileInstall("sync_working_folder.ffs_batch",@TempDir & "\sync_working_folder.ffs_batch",$FC_OVERWRITE)
 	ShellExecute(@TempDir & "\sync_working_folder.ffs_batch","","",$SHEX_EDIT)
 
