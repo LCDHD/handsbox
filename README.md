@@ -3,28 +3,76 @@ Folder-based Electronic Forms Records for Kentucky HANDS Program
 
 # Prerequisites
 
-
-In order to use the tool, you will also need to install the following:
+In order to *build* the tool, you will also need to install the following:
 - [AutoIt](https://www.autoitscript.com/site/autoit/downloads/)
-- [FreeFileSync](https://www.freefilesync.org/download.php) 
 - [PDFtk](https://www.pdflabs.com/tools/pdftk-the-pdf-toolkit/)
 
-Last, but not least, you will need some type of PDF software installed. This has been tested with:
+In order to *use* the tool, you will need
+- A file share for storing charts and working files
+- [FreeFileSync](https://www.freefilesync.org/download.php)
+- PDF software (see below)
 
-- Adobe Acrobat / Adobe Acrobat Reader / Adobe Acrobat Reader DC
-- Nitro Pro
-- Nuance PDF Converter
+A PDF reader / editor capable of:
+- Filling PDF forms
+- Saving filled forms
+- Digitally signing documents
+- Capturing and affixing signatures from participants (optional)
+
+This has been tested with the following:
+- [Adobe Acrobat Reader DC](https://get.adobe.com/reader/)
+- [Nitro Pro](https://www.gonitro.com/)
+- [Nitro PDF Reader](https://www.gonitro.com/pdf-reader)
+- [Nuance PowerPDF](https://www.nuance.com/print-capture-and-pdf-solutions/pdf-and-document-conversion/power-pdf-converter.html)
+- [Master PDF Editor](https://code-industry.net/masterpdfeditor/)
 
 # Quick Start
 
 - Install all the prerequisites listed above.
 - Clone the GIT Repository into a local folder
 - Copy HANDS_Custom_Generic.au3 to HANDS_Custom.au3
+- Copy "pdftk.exe" and "libiconv2.dll" from "C:\Program Files (x86)\PDFtk\bin\" into the local project folder
 - Open `HANDS Box.au3`, press F5 to run, or Ctrl-F7 to compile to an EXE.
 - Run the `HANDS Box`, click the "Setup" tab and then click the "Setup..." button.
 - Open `Documents\Hands Briefcase\HANDS Documents\Forms,` create folders named `English` and `Spanish` and copy PDF template forms here.
 
 # Software Overview and Tools
+
+## Folder Structure
+
+On each laptop, there should be a folder structure something like this. The Working structure will be created automatically by the HANDS Box on first run.
+
+- Documents\HANDS Briefcase
+  - HANDS Documents *(synced down from server)*
+  - Working *(two-way synched with server)*
+    - Labels
+    - Needs Correction
+    - To Data Processing
+    - To Supervisor
+    - Tracking Form
+    - Work In Progress
+
+Set up a file share on a central server and map to each client laptop, e.g.
+
+    net use H: \\server\HANDS /persistent:yes
+
+- H:\
+  - Charts
+  - HANDS Documents
+    - Forms
+      - English
+        - ABC 101 - Parent Entry Form [A].pdf
+        - ABC 102 - Parent Exit Form [A].pdf
+        - ADM 100 - Entry Packet [A].txt
+      - Spanish
+      - billingcodes.txt
+    - Software
+    - Supervision Forms
+  - Working Folders
+    - Mary.Staff
+    - Jane.Staff
+
+Working folder names should exactly match the usernames of the logged in users on each laptop
+Staff should have full read-write permission to their own Working Folders, and permissions to other working folders and charts as necessary for accessing data for processing, supervision, etc. Most staff should have read-only access the HANDS Documents folder to prevent accidental changes to software and templates. It is suggested that the compiled HANDS Box software be distributed through the HANDS Documents folder.
 
 ## Creating PDF Templates
 
