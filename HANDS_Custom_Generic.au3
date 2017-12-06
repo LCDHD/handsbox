@@ -84,7 +84,20 @@ dim $checkPDFProcess = ["NitroPDF.exe","Acrobat.exe","Acrord32.exe","Excel.exe"]
 
 dim $encConstant = "CHANGE ME" ; For encrypting the saved access key
 
+
+;PDF-TK is required for this to work.
+
+;Recommended: embed pdftk into the HANDS Box EXE
+;Uncomment these lines, and copy the referenced files into the source directory
+
+;DirCreate($handsAppData)
+;FileInstall("pdftk.exe",$handsAppData & "\pdftk.exe")
+;FileInstall("libiconv2.dll",$handsAppData & "\libiconv2.dll")
+;global $pdftk = $handsAppData & "\pdftk.exe"
+
+;Alternative Option: link to PDF-tk in program files
 global $pdftk = @ProgramFilesDir & '\PDFtk\bin\pdftk.exe'
+
 
 
 ;******************************************************************************

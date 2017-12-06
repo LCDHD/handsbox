@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=hands-start-icon.ico
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=HANDS Box - Various Scripts to automate EMR Processing for the HANDS Program
-#AutoIt3Wrapper_Res_Fileversion=1.2.22.0
+#AutoIt3Wrapper_Res_Fileversion=1.2.23.0
 #AutoIt3Wrapper_Res_LegalCopyright=Free Software under GNU GPL, (c) 2016-2017 by Lake Cumberland District Health Department
 #AutoIt3Wrapper_Res_Language=1033
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -13,7 +13,7 @@
 ; COPYRIGHT (C) 2016-2017
 ; BY THE LAKE CUMBERLAND DISTRICT HEALTH DEPARTMENT (www.lcdhd.org)
 ; ORIGINAL CODE BY DANIEL MCFEETERS (www.fiforms.net)
-; LATEST VERSION AVAILABLE FROM https://oss.lcdhd.org/handsbox/
+; LATEST VERSION AVAILABLE FROM https://github.com/LCDHD/handsbox
 ;
 ; This program is free software; you can redistribute it and/or
 ; modify it under the terms of the GNU General Public License
@@ -1037,6 +1037,9 @@ Func CreateForm($labelSelected,$templateSelected,$date)   ; CREATE FORM FROM SEL
 	; AND TARGET PDF FILE SET TO THE SELECTED PDF TEMPLATE.
 	; THEN SHELL EXEC THE TEMPORARY FDF FILE TO OPEN WITH SYSTEM VIEWER
 
+
+    CheckPDFTK()
+
 	$formateddate = StringReplace(StringMid($date, 6), "-", "/") & "/" & StringLeft($date, 4)
 	$parsedName = ParseFormName($templateSelected)
 	$workingFilename = $parsedName[3] & $date & " " & StringStripWS(StringReplace($labelSelected, ".fdf", ""), 7) & " - " & StringStripWS($parsedName[1], 7) & ".pdf"
@@ -1051,9 +1054,12 @@ Func CreateForm($labelSelected,$templateSelected,$date)   ; CREATE FORM FROM SEL
 		    Return 1
 		EndIf
 	EndIf
-	HANDSLog("Create Forms",$workingFilename)
-	FileCopy($rootPath & $formsPath & "\" & $formLanguage & "\" & $templateSelected, $rootPath & $workBase & $workingPath & "\" & $workingFilename)
-	RememberFile($rootPath & $workBase & $workingPath & "\" & $workingFilename)
+
+	$templateFile = $rootPath & $formsPath & "\" & $formLanguage & "\" & $templateSelected
+	$finalPDF = $rootPath & $workBase & $workingPath & "\" & $workingFilename
+
+	; Create an FDF file with the information
+
 	$f = FileOpen($labelsSelectPath & "\" & $labelSelected, $FO_READ)
 	$FDFTemplate = FileRead($f)
 	FileClose($f)
@@ -1072,7 +1078,17 @@ Func CreateForm($labelSelected,$templateSelected,$date)   ; CREATE FORM FROM SEL
 	$f = FileOpen($TempFDFName, $FO_BINARY + $FO_OVERWRITE)
 	FileWrite($f, $FDFTemplate)
 	FileClose($f)
-	ShellExecute($TempFDFName)
+	;OpenFDF($TempFDFName,$rootPath & $workBase & $workingPath & "\" & $workingFilename)
+
+	; Create the new PDF file using the FDF file info
+	HANDSLog("Create Forms",$workingFilename)
+	RunWait('"' & $pdftk & '" "' & $templateFile & '" fill_form "' & $TempFDFName & '" output "' & $finalPDF & '"',"",@SW_HIDE)
+	FileDelete($TempFDFName)
+
+	; Open the PDF file using the default application
+	RememberFile($finalPDF)
+	ShellExecute($finalPDF,"",$rootPath & $workBase & $workingPath)
+
 EndFunc
 
 Func CreateFormPacket()
@@ -1124,7 +1140,14 @@ Func CreateFormPacketFinish($date)     ; Creates a form or form packet for the s
 EndFunc   ;==>CreateFormPacket
 
 
-
+Func CheckPDFTK()
+	If Not FileExists($pdftk) Then
+		If MsgBox($MB_YESNO,"PDFTk not installed","PDFTk is not installed. Would you like visit the download page to install it?" & @CRLF & @CRLF & "Please see the README file for info on embeding PDFTk into the HANDS Box to avoid this problem.") = $IDYES Then
+			ShellExecute("https://www.pdflabs.com/tools/pdftk-the-pdf-toolkit/")
+		EndIf
+		Exit 1
+	EndIf
+EndFunc
 
 
 ;********************** SUPERVISOR/DATA GUI FUNCTIONS *************************
@@ -1148,12 +1171,7 @@ Func AnalyzeForms()        ; ANALYZE COLLECTION OF PDF FILES AND OUTPUT DATA TO 
 	Local $arrayHeaders[0]
 	Local $arrayData[0]
 
-	If Not FileExists($pdftk) Then
-		If MsgBox($MB_YESNO,"PDFTk not installed","PDFTk is not installed. Would you like visit the download page to install it?") = $IDYES Then
-			ShellExecute("https://www.pdflabs.com/tools/pdftk-the-pdf-toolkit/")
-		EndIf
-		Exit 1
-	EndIf
+    CheckPDFTK()
 
 	$folder = FileSelectFolder("Choose Path to Anaylze",$rootPath)
 	if $folder = "" Then
@@ -1330,13 +1348,10 @@ EndFunc
 
 
 Func UnlockPDF()           ; USE PDFTK TO REMOVE COPY PROTECTION FROM PDF
+
+    CheckPDFTK()
+
 	; Use PDFTk to remove copy protection from a PDF
-	If Not FileExists($pdftk) Then
-		If MsgBox($MB_YESNO,"PDFTk not installed","PDFTk is not installed. Would you like visit the download page to install it?") = $IDYES Then
-			ShellExecute("https://www.pdflabs.com/tools/pdftk-the-pdf-toolkit/")
-		EndIf
-		Return 1
-	EndIf
 	If MSGBox($MB_YESNO,"HANDS Box PDF Tool","Sometimes you may need to edit a PDF file that has been locked." & @CRLF  _
 	      & "This tool uses an external program, PDFTk, to remove this copy protection lock. " & @CRLF _
 		  & "This functionality is only provided for documents which you OWN or have legitimate license to use." & @CRLF _
