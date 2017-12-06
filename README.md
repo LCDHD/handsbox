@@ -43,7 +43,7 @@ On each laptop, there should be a folder structure something like this. The Work
 
 - Documents\HANDS Briefcase
   - HANDS Documents *(synced down from server)*
-  - Working *(two-way synched with server)*
+  - Working *(two-way synced with server)*
     - Labels
     - Needs Correction
     - To Data Processing
