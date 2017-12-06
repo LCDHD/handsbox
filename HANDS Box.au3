@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=hands-start-icon.ico
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=HANDS Box - Various Scripts to automate EMR Processing for the HANDS Program
-#AutoIt3Wrapper_Res_Fileversion=1.2.23.0
+#AutoIt3Wrapper_Res_Fileversion=1.2.24.0
 #AutoIt3Wrapper_Res_LegalCopyright=Free Software under GNU GPL, (c) 2016-2017 by Lake Cumberland District Health Department
 #AutoIt3Wrapper_Res_Language=1033
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -1376,4 +1376,3 @@ Func UnlockPDF()           ; USE PDFTK TO REMOVE COPY PROTECTION FROM PDF
 	ShellExecuteWait($pdftk,'"' & $tfile & '" output "' & $fname & '" drop_xmp drop_xfa',"","",@SW_HIDE)
 	ShellExecute($fname)
 EndFunc
-

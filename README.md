@@ -19,9 +19,10 @@ A PDF reader / editor capable of:
 - Capturing and affixing signatures from participants (optional)
 
 This has been tested with the following:
-- [Adobe Acrobat Reader DC](https://get.adobe.com/reader/)
-- [Nitro Pro](https://www.gonitro.com/)
+- [Foxit Reader](https://www.foxitsoftware.com/pdf-reader/) (Recommended)
+- [Nitro Pro](https://www.gonitro.com/) (Recommended)
 - [Nitro PDF Reader](https://www.gonitro.com/pdf-reader)
+- [Adobe Acrobat Reader DC](https://get.adobe.com/reader/)
 - [Nuance PowerPDF](https://www.nuance.com/print-capture-and-pdf-solutions/pdf-and-document-conversion/power-pdf-converter.html)
 - [Master PDF Editor](https://code-industry.net/masterpdfeditor/)
 

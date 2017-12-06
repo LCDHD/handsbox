@@ -64,7 +64,7 @@ dim $labelFieldsNames[10] = ["_LCDHD_FSW", "_LCDHD_SSN", "_LCDHD_CLID", "_LCDHD_
 dim $blankLabelName = "000 - Blank Label.pdf"
 
 ; Processes which, if running, should prevent the Sync from firing
-dim $checkPDFProcess = ["NitroPDF.exe","Acrobat.exe","Acrord32.exe","Excel.exe"]
+dim $checkPDFProcess = ["NitroPDF.exe","Acrobat.exe","Acrord32.exe","Excel.exe","FoxitReader.exe"]
 
 ; Set this to a random string for increase security
 dim $encConstant = "CHANGE ME" ; For encrypting the saved access key
