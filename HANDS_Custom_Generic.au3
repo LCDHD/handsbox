@@ -15,6 +15,7 @@
 ;                          GLOBAL VARIABLES
 ;******************************************************************************
 
+dim $handsAppData = @AppDataDir & "\HANDSBox\"
 
 ;To embed PDFTk, uncomment the following 4 LINES,
 ;and copy the referenced files into the source directory:
@@ -51,7 +52,6 @@ dim $labelsPath = "Labels"
 dim $logPath = "Logs"
 
 dim $supervisionPath = "Supervision"
-dim $handsAppData = @AppDataDir & "\HANDSBox\"
 dim $iniFile = $handsAppData & "hands_config.ini"
 dim $labelsSelectPath = $rootPath & $workBase & $labelsPath
 
