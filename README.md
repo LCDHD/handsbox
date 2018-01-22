@@ -8,8 +8,10 @@ In order to *build* the tool, you will also need to install the following:
 - [PDFtk](https://www.pdflabs.com/tools/pdftk-the-pdf-toolkit/)
 
 In order to *use* the tool, you will need
-- A file share for storing charts and working files
-- [FreeFileSync](https://www.freefilesync.org/download.php)
+- A file share for storing charts and working files. Nextcloud or Owncloud
+  are good options, although it's possible to use this using a regular
+  Windows file share or WebDAV share, optionally with syncing software
+  such as FreeFileSync
 - PDF software (see below)
 
 A PDF reader / editor capable of:
@@ -31,33 +33,46 @@ This has been tested with the following:
 - Install all the prerequisites listed above.
 - Clone the GIT Repository into a local folder
 - Copy HANDS_Custom_Generic.au3 to HANDS_Custom.au3
-- Copy "pdftk.exe" and "libiconv2.dll" from "C:\Program Files (x86)\PDFtk\bin\" into the local project folder
+- Copy "pdftk.exe" and "libiconv2.dll" from
+  "C:\Program Files (x86)\PDFtk\bin\" into the local project folder
 - Open `HANDS Box.au3`, press F5 to run, or Ctrl-F7 to compile to an EXE.
-- Run the `HANDS Box`, click the "Setup" tab and then click the "Setup..." button.
-- Open `Documents\Hands Briefcase\HANDS Documents\Forms,` create folders named `English` and `Spanish` and copy PDF template forms here.
+- Run the `HANDS Box`, click the "Setup" tab and then click the "Setup..."
+  button.
+- Open `Documents\Hands Briefcase\HANDS Documents\Forms,` create folders named
+  `English` and `Spanish` and copy PDF template forms here.
 
 # Software Overview and Tools
 
 ## Folder Structure
 
-On each laptop, there should be a folder structure something like this. The Working structure will be created automatically by the HANDS Box on first run.
+On each laptop, there should be a folder structure something like this. The
+Working structure will be created automatically by the HANDS Box on first run.
 
 - Documents\HANDS Briefcase
+  - Charts.Region1
+  - Charts.Region2
   - HANDS Documents *(synced down from server)*
-  - Working *(two-way synced with server)*
+  - Working.MyWindowsUsername *(two-way synced with server)*
     - Labels
     - Needs Correction
     - To Data Processing
     - To Supervisor
     - Tracking Form
     - Work In Progress
+  - Working.OtherHomeVisitor
+  - Working.MoreStaff
+  - Working.Etc.
 
-Set up a file share on a central server and map to each client laptop, e.g.
+Synchronize files using a service like Nextcloud or Owncloud. The
+GroupFolders app in NextCloud is an excellent option for sharing charts.
 
+Alternatively, set up a file share on a central server and map to each
+client laptop, e.g.
     net use H: \\server\HANDS /persistent:yes
 
-- H:\
-  - Charts
+Your complete file share will look something like this. You can
+  - Charts.Region1
+  - Charts.Region2
   - HANDS Documents
     - Forms
       - English
@@ -68,16 +83,23 @@ Set up a file share on a central server and map to each client laptop, e.g.
       - billingcodes.txt
     - Software
     - Supervision Forms
-  - Working Folders
-    - Mary.Staff
-    - Jane.Staff
+  - Working.Mary.Staff
+  - Working.Jane.Staff
 
-Working folder names should exactly match the usernames of the logged in users on each laptop
-Staff should have full read-write permission to their own Working Folders, and permissions to other working folders and charts as necessary for accessing data for processing, supervision, etc. Most staff should have read-only access the HANDS Documents folder to prevent accidental changes to software and templates. It is suggested that the compiled HANDS Box software be distributed through the HANDS Documents folder.
+Working folder names should exactly match the usernames of the logged in users
+on each laptop
+
+Staff should have full read-write permission to their own Working Folders,
+and permissions to other working folders and charts as necessary for accessing
+data for processing, supervision, etc. Most staff should have read-only access
+the HANDS Documents folder to prevent accidental changes to software and
+templates. It is suggested that the compiled HANDS Box software be distributed
+through the HANDS Documents folder.
 
 ## Creating PDF Templates
 
-PDF Templates are regular, fillable PDF documents. Special fields that will be pre-filled from the "label" should be named EXACTLY as follows:
+PDF Templates are regular, fillable PDF documents. Special fields that will
+be pre-filled from the "label" should be named EXACTLY as follows:
 
 - _LCDHD_FSW (Home Visitor's Full Name)
 - _LCDHD_SSN (Patient ID or SSN)

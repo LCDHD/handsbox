@@ -34,13 +34,14 @@ dim $HANDSBoxCopyright = "Software Distributed under the GNU GPL." & @CRLF & @CR
 ; Paths, adjust for your environment
 
 dim $rootPath = @UserProfileDir & "\Documents\HANDS Briefcase\"
+dim $webRoot = $rootPath
 dim $formsPath = "HANDS Documents\Forms"
 dim $supervisionFormsPath = "HANDS Documents\Supervision Forms"
-dim $chartsFullPath = "H:\Charts"
-dim $homevisitorPath = "H:\Working Folders"
-dim $handsDocumentsPath = "H:\HANDS Documents"
-dim $workBase = "Working\"
-dim $webRoot = "H:\"
+dim $chartsPath = "Charts.*"
+dim $homevisitorPath = $rootPath
+dim $homevisitorWildcard = "Working.*"
+dim $workBase = "Working." & @UserName & "\"
+
 
 dim $workingPath = "Work In Progress"
 dim $queueToChart = "Queue To Chart"
@@ -50,6 +51,7 @@ dim $correctionPath = "Needs Correction"
 dim $trackingPath = "Tracking Form"
 dim $labelsPath = "Labels"
 dim $logPath = "Logs"
+dim $handsBoxHeight = 550
 
 dim $supervisionPath = "Supervision"
 dim $iniFile = $handsAppData & "hands_config.ini"
@@ -97,7 +99,6 @@ Func SetupHANDS()
 
 EndFunc   ;==>SetupHANDS
 
-
 Func RunHelp()
 	; Make this link to your own internal help page
 	ShellExecute("https://github.com/LCDHD/handsbox")
@@ -116,50 +117,6 @@ Func HANDSSetupScreen()
 EndFunc
 
 Func HANDSBoxBottomButtons()
-    ; Synchronize
-	GUICtrlCreateButton("Synchronize", 1, 550, 180, 40)
-	GUICtrlSetOnEvent(-1, "RunSynchronize")
-	GUICtrlCreateButton("Advanced Compare/Sync", 600, 550, 195, 40)
-	GUICtrlSetOnEvent(-1, "EditSynchronize")
 
-	; Add more custom buttons to the bottom of the screen
 
 EndFunc
-
-Func CheckProc()
-	If ProcessExists("FreeFileSync.exe") or ProcessExists("FreeFileSync_64.exe") Then
-		Return True
-	Else
-		Return False
-	EndIf
-EndFunc
-
-Func RunSynchronize()
-    If ProcessCheck() Then
-		Return 1
-	EndIf
-	HANDSLog("Sync","")
-
-	FileInstall("sync_working_folder.ffs_batch",@TempDir & "\sync_working_folder.ffs_batch",$FC_OVERWRITE)
-	ShellExecute(@TempDir & "\sync_working_folder.ffs_batch")
-	While CheckProc()
-		Sleep(2)
-	WEnd
-
-	FileInstall("sync_hands_documents.ffs_batch",@TempDir & "\sync_hands_documents.ffs_batch",$FC_OVERWRITE)
-	ShellExecute(@TempDir & "\sync_hands_documents.ffs_batch")
-	While CheckProc()
-		Sleep(2)
-	WEnd
-EndFunc   ;==>RunSynchronize
-
-Func EditSynchronize()
-	HANDSLog("EditSync","")
-    If ProcessCheck() Then
-		Return 1
-	EndIf
-
-	FileInstall("sync_working_folder.ffs_batch",@TempDir & "\sync_working_folder.ffs_batch",$FC_OVERWRITE)
-	ShellExecute(@TempDir & "\sync_working_folder.ffs_batch","","",$SHEX_EDIT)
-
-EndFunc   ;==>EditSynchronize

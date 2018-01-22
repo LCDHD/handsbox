@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=hands-start-icon.ico
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=HANDS Box - Various Scripts to automate EMR Processing for the HANDS Program
-#AutoIt3Wrapper_Res_Fileversion=1.2.24.0
+#AutoIt3Wrapper_Res_Fileversion=1.3.2.0
 #AutoIt3Wrapper_Res_LegalCopyright=Free Software under GNU GPL, (c) 2016-2017 by Lake Cumberland District Health Department
 #AutoIt3Wrapper_Res_Language=1033
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -122,11 +122,11 @@ Func getPDFList($path, $filter)	; LIST FILES IN $path (WITH SUPPLIED FILTER) AND
 	return $fArr
 EndFunc   ;==>getPDFList
 
-Func getFolderList($path)  ; LIST FOLDERS IN $path (WITH SUPPLIED FILTER) AND RETURN IN AN ARRAY
+Func getFolderList($path,$wildcard,$exclude)  ; LIST FOLDERS IN $path (WITH SUPPLIED FILTER) AND RETURN IN AN ARRAY
 	local $blankArray[1]
 	$blankArray[0] = "None"
 	$fullpath = $path
-	$fArr = _FileListToArray($fullpath, "*",$FLTA_FOLDERS)
+	$fArr = _FileListToArray($fullpath, $wildcard,$FLTA_FOLDERS)
 	if @error = 1 Then
 		ConsoleWrite("Path was invalid: " & $fullpath)
 		Return $blankArray
@@ -139,6 +139,12 @@ Func getFolderList($path)  ; LIST FOLDERS IN $path (WITH SUPPLIED FILTER) AND RE
 		ConsoleWrite("Other Error Listing File in: " & $fullpath)
 		Return $blankArray
 	EndIf
+	For $i = 1 to UBound($fArr) - 1
+		If($fArr[$i] == $exclude) Then
+			_ArrayDelete($fArr,$i)
+			ExitLoop
+		EndIf
+	Next
 	return $fArr
 EndFunc   ;==>getPDFList
 
@@ -376,7 +382,7 @@ Func RunMain()             ; MAIN HANDS BOX WINDOW
 
     HANDSInit()
 
-	$mainwindow = GUICreate("HANDS Box (" & $HANDSRole & ")", 800, 590)
+	$mainwindow = GUICreate("HANDS Box (" & $HANDSRole & ")", 800, $handsBoxHeight)
 	Opt("GUIOnEventMode", 1)
 	GUISetOnEvent($GUI_EVENT_CLOSE, "CLOSEClicked")
 
@@ -484,9 +490,9 @@ Func RunMain()             ; MAIN HANDS BOX WINDOW
 		$labeloffset = 25
 		GUICtrlSetOnEvent(-1,"SelectVisitorLabels")
 		$hvliststring = ""
-		$hvlistarray = getFolderList($homevisitorPath)
+		$hvlistarray = getFolderList($homevisitorPath,$homevisitorWildcard,StringMid($workBase,1,StringLen($workBase)-1))
 		for $i = 1 to UBound($hvlistarray) - 1
-			$hvliststring &=  $hvlistarray[$i] & "|"
+			$hvliststring &=  StringReplace($hvlistarray[$i],StringReplace($homevisitorWildcard,"*",""),"") & "|" ;$hvlistarray[$i] & "|"
 		Next
 		GUICtrlSetData($labelVisitorList,$hvliststring)
 	EndIf
@@ -561,10 +567,10 @@ Func RunMain()             ; MAIN HANDS BOX WINDOW
 	HANDSBoxBottomButtons()
 
 	; Charts Button
-	GUICtrlCreateButton("My Charts", 430, 550, 80, 40)
+	GUICtrlCreateButton("HANDS Folder", 540, 1, 98, 28)
 	GUICtrlSetOnEvent(-1, "ViewCharts")
-	GUICtrlCreateButton("Web Charts", 515, 550, 80, 40)
-	GUICtrlSetOnEvent(-1, "ViewWebCharts")
+	;GUICtrlCreateButton("Web Charts", 515, 550, 80, 40)
+	;GUICtrlSetOnEvent(-1, "ViewWebCharts")
 
 	; Wait Around
 	GUISetState(@SW_SHOW)
@@ -603,21 +609,22 @@ Func RefreshMain()         ; REFRESH THE MAIN WINDOW AND COUNTERS
 	$stat = "Forms in Filing Queue: " & countPath($rootPath & $workBase & $queueToChart)
 	GUICtrlSetData($tab2statusLabel,$stat)
 
-	$visitors = getFolderList($homevisitorPath)
+	$visitors = getFolderList($homevisitorPath,$homevisitorWildcard, StringMid($workBase,1,StringLen($workBase)-1))
 	while UBound($visitorsListItems) > 0
 	    GUICtrlDelete(_ArrayPop($visitorsListItems))
 	WEnd
 
 	$i = 0
 	;_ArrayDisplay($visitors)
-	while $i < $visitors[0]
+	while $i < UBound($visitors) - 1
 		$i = $i + 1
 		$todata = getPDFList($homevisitorPath & "\" & $visitors[$i] & "\" & $todataPath,"*.pdf")
 		$tosup = getPDFList($homevisitorPath & "\" & $visitors[$i] & "\" & $tosupervisorPath,"*.pdf")
 		$needscor = getPDFList($homevisitorPath & "\" & $visitors[$i] & "\" & $correctionPath,"*.pdf")
 		$inprogress = getPDFList($homevisitorPath & "\" & $visitors[$i] & "\" & $workingPath,"*.pdf")
 		$vlabels = getPDFList($homevisitorPath & "\" & $visitors[$i] & "\" & $labelsPath,"*.fdf")
-		_ArrayAdd($visitorsListItems, GUICtrlCreateListViewItem($visitors[$i]  & "|" & $todata[0] & "|" & $tosup[0] & "|" & $needscor[0] & "|"  & $inprogress[0] & "|" & $vlabels[0],$visitorlist))
+		$visitorname = StringReplace($visitors[$i],StringReplace($homevisitorWildcard,"*",""),"")
+		_ArrayAdd($visitorsListItems, GUICtrlCreateListViewItem($visitorname  & "|" & $todata[0] & "|" & $tosup[0] & "|" & $needscor[0] & "|"  & $inprogress[0] & "|" & $vlabels[0],$visitorlist))
 	Wend
 
 EndFunc   ;==>RefreshMain
@@ -676,11 +683,7 @@ Func GetVisitorSelected()  ; RETURN WHICH VISITOR IS SELECTED ON SUPERVISOR/DATA
 EndFunc
 
 Func ViewCharts()           ; OPEN THE CHARTS FOLDER
-	ShellExecute($chartsFullPath)
-EndFunc
-
-Func ViewWebCharts()           ; OPEN THE CHARTS FOLDER
-	ShellExecute($webRoot)
+	ShellExecute($rootPath)
 EndFunc
 
 Func ProcessCheck()        ; Check if any processes are running that could interfere with sync
@@ -859,16 +862,26 @@ Func FileToCharts()                     ; FILE QUEUED FORMS INTO THE CHARTS, BAS
 	ProgressOn("HANDS Supervisor Functions","Filing Forms in Charts","Initializing",10,10,$DLG_MOVEABLE)
     If countPath($rootPath & $workBase & $queueToChart) = 0 Then
 		MsgBox(0,"HANDS Supervisor Functions","There are not forms in the queue. Please open the queue first and put some forms into it.")
+		ProgressOff()
 		Return 1
 	EndIf
 	If Not FileExists($webRoot) Then
 		MsgBox(0,"HANDS Supervisor Functions","I cannot access the charts at the moment. Please try opening the charts folder first.")
-		Return 1
+		ProgressOff()
+        Return 1
 	EndIf
 	ProgressSet(5,"Scanning Forms to File")
 	$formsToFile = _FileListToArray($rootPath & $workBase & $queueToChart)
 	ProgressSet(10,"Scanning Charts")
-    $charts = _FileListToArrayRec($webRoot,"*",$FLTA_FOLDERS,-7,$FLTAR_SORT,$FLTAR_FULLPATH)
+    Local $charts[0]
+	Local $cfolders[0]
+	$cfolders = _FileListToArray($webRoot,$chartsPath,$FLTA_FOLDERS,True)
+    ;_ArrayDisplay($chartfolders,"$chartfolders")
+	For $i = 1 to Ubound($cfolders) - 1
+		$chartssingle = _FileListToArrayRec($cfolders[$i],"*",$FLTA_FOLDERS,-7,$FLTAR_SORT,$FLTAR_FULLPATH)
+		_ArrayDelete($chartssingle,0)
+		_ArrayConcatenate($charts,$chartssingle)
+	Next
     ;_ArrayDisplay($charts,"$charts")
 
 	;Build $chartnames and $chartfolders arrays for form destinations
@@ -894,6 +907,7 @@ Func FileToCharts()                     ; FILE QUEUED FORMS INTO THE CHARTS, BAS
 			EndIf
 		EndIf
 	Next
+    ;_ArrayDisplay($chartfolders,"$chartnames")
 
 	;Loop over each form in queue and file it if a match is found
 	$chartnum = 0
@@ -912,7 +926,6 @@ Func FileToCharts()                     ; FILE QUEUED FORMS INTO THE CHARTS, BAS
 		if $folderindex = -1 Then
 			$cantfile += 1
 		Else
-			;MsgBox(0,"DEBUG","Going To Move " & @CRLF & $rootPath & $workBase & $queueToChart & "\" & $path & @CRLF & "to" & @CRLF & $chartsFullPath & "\" & $chartfolders[$folderindex] & "\")
 			HANDSLog("Chart Filing","Filing '" & $path & "' to '" & $chartfolders[$folderindex] & "'")
 	        ProgressSet(10+($chartnum*80/$formsToFile[0]),"Filing Form: " & $path)
 			If Not FileMove($rootPath & $workBase & $queueToChart & "\" & $path,$chartfolders[$folderindex]) Then
@@ -942,7 +955,7 @@ Func SelectVisitorLabels()              ; REFRESH THE LABEL LIST AFTER SELECTING
 	if $VisitorName = "Me" Then
 	    $labelsSelectPath = $rootPath & $workBase & $labelsPath
 	Else
-		$labelsSelectPath = $homevisitorPath & "\" & $VisitorName & "\" & $labelsPath
+		$labelsSelectPath = $homevisitorPath & "\" & StringReplace($homevisitorWildcard,"*","") & $VisitorName & "\" & $labelsPath
 	EndIf
 	RefreshMain()
 EndFunc   ;==>SelectVisitorLabels
