@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=hands-start-icon.ico
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=HANDS Box - Various Scripts to automate EMR Processing for the HANDS Program
-#AutoIt3Wrapper_Res_Fileversion=1.3.3.0
+#AutoIt3Wrapper_Res_Fileversion=1.3.4.0
 #AutoIt3Wrapper_Res_LegalCopyright=Free Software under GNU GPL, (c) 2016-2017 by Lake Cumberland District Health Department
 #AutoIt3Wrapper_Res_Language=1033
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -610,7 +610,7 @@ Func RefreshMain()         ; REFRESH THE MAIN WINDOW AND COUNTERS
 	$stat = "Forms in Filing Queue: " & countPath($rootPath & $workBase & $queueToChart)
 	GUICtrlSetData($tab2statusLabel,$stat)
 
-	$visitors = getFolderList($homevisitorPath,$homevisitorWildcard, StringMid($workBase,1,StringLen($workBase)-1))
+	$visitors = getFolderList($homevisitorPath,$homevisitorWildcard, '~~') ; StringMid($workBase,1,StringLen($workBase)-1))
 	while UBound($visitorsListItems) > 0
 	    GUICtrlDelete(_ArrayPop($visitorsListItems))
 	WEnd
