@@ -1,6 +1,21 @@
 # Changelog for HANDS box
 Notable changes to HANDS Box at each version
 
+## [1.3.4] - 2018-01-25
+### Changed
+- Added user's own name to the listing of home visitors in the Supervisor /
+  Data Entry staff tab. (Feature Request)
+
+## [1.3.3] - 2018-01-25
+### Added
+- Add a rudimentary check for PDF signatures to display the name(s)
+  of the signers when queuing forms
+- Add feature to prompt before deleting blank forms in the working folder
+
+### Changed
+- Bugfix: Clear ReadOnly attribute on file copy when creating
+  new Tracking forms or Supervision forms. (Better compatibilty with NextCloud)
+
 ## [1.3.2] - 2018-01-22
 ### Changed
 - This version contains numerous changes to improve compatibility with
