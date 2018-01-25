@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=hands-start-icon.ico
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=HANDS Box - Various Scripts to automate EMR Processing for the HANDS Program
-#AutoIt3Wrapper_Res_Fileversion=1.3.2.0
+#AutoIt3Wrapper_Res_Fileversion=1.3.3.0
 #AutoIt3Wrapper_Res_LegalCopyright=Free Software under GNU GPL, (c) 2016-2017 by Lake Cumberland District Health Department
 #AutoIt3Wrapper_Res_Language=1033
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -44,6 +44,7 @@
 #include <File.au3>
 #include <Array.au3>
 #include <Crypt.au3>
+#include<String.au3>
 
 ; Set some sensible default values here
 if(@OSArch = "X32") Then
@@ -711,6 +712,42 @@ EndFunc   ;==>CLOSEClicked
 
 ;************************* FOLDER QUEUE FUNCTIONS *****************************
 
+Func getSigName($pdf)
+	$f = FileOpen($pdf,$FO_BINARY)
+	$cont = FileRead($f)
+	FileClose($f)
+	return getSigNameInternal($cont,1)
+EndFunc
+
+Func getSigNameInternal($cont,$startPos)
+	$sigStart = StringInStr($cont,_StringToHex("/adbe.pkcs7.detached"),1,1,$startPos)
+	if $sigStart = 0 Then
+		ConsoleWrite('No $sigStart')
+		Return ''
+    EndIf
+	$nameStart = StringInStr($cont,_StringToHex('/Name'),0,1,$sigStart)
+	if $nameStart = 0 Then
+		ConsoleWrite('No $nameStart')
+		Return ''
+    EndIf
+	$parenStart = StringInStr($cont,_StringToHex('('),0,1,$nameStart)
+	$parenStart += 2
+	$nameEnd = StringInStr($cont,_StringToHex(')'),0,1,$parenStart)
+	if $nameEnd = 0 Then
+		ConsoleWrite('No $parenEnd')
+		Return ''
+    EndIf
+	;ConsoleWrite('Start and End: ' & $nameStart & '-' & $parenEnd)
+	$sig = BinaryToString(BinaryMid($cont,Floor($parenStart / 2),Floor(($nameEnd - $parenStart)/2)))
+	$nextSig = getSigNameInternal($cont,$nameEnd)
+	if $nextSig = "" Then
+		return $sig
+	Else
+		return $sig & "," & $nextSig
+	EndIf
+EndFunc
+
+
 Func QueueToFolder($src,$dst,$purpose,$selectAll)  ; CREATE WINDOW TO CONFIRM FILE QUEUE
     If ProcessCheck() Then
 		Return 1
@@ -724,9 +761,10 @@ Func QueueToFolder($src,$dst,$purpose,$selectAll)  ; CREATE WINDOW TO CONFIRM FI
 		MsgBox(0,"HANDS Box","There aren't any forms to queue.")
 		Return 1
 	EndIf
+	ProgressOn("HANDS Box","Scanning Forms")
 
 
-	global $HANDSFolderQueueConfirm = GUICreate("Confirm Queue " & $purpose,550,400,-1,-1,$WS_POPUP+$WS_CAPTION,$WS_EX_TOPMOST)
+	global $HANDSFolderQueueConfirm = GUICreate("Confirm Queue " & $purpose,700,400,-1,-1,$WS_POPUP+$WS_CAPTION,$WS_EX_TOPMOST)
 	GUICtrlCreateLabel("Are you ready to queue the following forms " & $purpose & "?" _
 	          & @CRLF & @CRLF & _
 			  "Please confirm that you have reviewed and signed every form listed below:",10,10)
@@ -740,12 +778,14 @@ Func QueueToFolder($src,$dst,$purpose,$selectAll)  ; CREATE WINDOW TO CONFIRM FI
 	GUICtrlCreateButton("Select None",175,330,100,30)
 	GUICtrlSetOnEvent(-1,"QueueToFolderSelectNone")
 
-    global $HANDSFolderList = GUICtrlCreateListView("File Name | Modified",5,50,540,270,-1,$LVS_EX_CHECKBOXES)
+    global $HANDSFolderList = GUICtrlCreateListView("File Name | Modified | Signed            ",5,50,690,270,-1,$LVS_EX_CHECKBOXES)
     $i = 0
 	while $i < $aForms[0]
+		ProgressSet($i * 100 / $aForms[0],$aForms[$i])
 		$i += 1
 		$t = FileGetTime($src & "\" & $aForms[$i])
-		GUICtrlCreateListViewItem($aForms[$i] & "|" & $t[1] & "/" & $t[2] & " at " & $t[3] & ":" & $t[4],$HANDSFolderList)
+		$sig = getSigName($src & "\" & $aForms[$i])
+		GUICtrlCreateListViewItem($aForms[$i] & "|" & $t[1] & "/" & $t[2] & " at " & $t[3] & ":" & $t[4] & "|" & $sig,$HANDSFolderList)
 		If($selectAll) Then
 	       _GUICtrlListView_SetItemChecked($HANDSFolderList,$i-1)
 		EndIf
@@ -757,6 +797,7 @@ Func QueueToFolder($src,$dst,$purpose,$selectAll)  ; CREATE WINDOW TO CONFIRM FI
     global $HANDSFolderQueueSrc = $src
 	global $HANDSFolderQueueDst = $dst
 	global $HANDSFolderQueuePurpose = $purpose
+	ProgressOff()
 
 	GUISetState(@SW_SHOW,$HANDSFolderQueueConfirm)
 
@@ -1017,6 +1058,7 @@ Func NewTrackingForm()                  ; COPY NEW EXCEL TRACKING FORM TEMPLATE 
 	$src = $rootPath & $formsPath & "\" & $formLanguage & "\Family Tracking Form.xlsx"
 	$dst = $rootPath & $workBase & $trackingPath & "\" & $labelSelected & " Tracking Form.xlsx"
 	FileCopy($src,$dst)
+	FileSetAttrib($dst,"-R")
 	ShellExecute($dst)
 EndFunc   ;==>NewTrackingForm
 
@@ -1040,9 +1082,17 @@ EndFunc
 Func CheckBlankFiles()              ; Check through remembered files for blank files, and delete any blank ones
 	If ProcessCheck() Then Return False
 	$i = 0
+	$confirmed = false
 	While $i < UBound($formsCopied)
 		$checkhash = _Crypt_HashFile($formsCopied[$i],$CALG_SHA1)
 		if $checkhash = $formsCopiedHashes[$i] Then
+			If Not $confirmed Then
+				If MsgBox(4,"HANDS Box","You have left blank forms in your working folder. Do you want to delete them now?") = 6 Then
+					$confirmed = true
+			    Else
+				    Return False
+				EndIf
+			EndIf
 			HANDSLog("DeleteBlank",$formsCopied[$i])
 			FileDelete($formsCopied[$i])
 		EndIf
@@ -1343,6 +1393,7 @@ Func NewSupervision()       ; Create new supervision form for selected home visi
 	$dst = $homevisitorPath & "\" & GetVisitorSelected() & "\" & $supervisionPath & "\" & $parsedname[3] & StringReplace(_NowCalcDate(),"/","-") & " " & GetVisitorSelected() & " - " & $parsedname[1] & $sExtension
 	DirCreate($homevisitorPath & "\" & GetVisitorSelected() & "\" & $supervisionPath)
     FileCopy($file,$dst)
+	FileSetAttrib($dst,"-R")
 	ShellExecute($dst)
 
 EndFunc  ;==>NewSupervision
