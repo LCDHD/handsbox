@@ -106,6 +106,13 @@ EndFunc
 
 Func HANDSInit()
 	; Do custom start-up functions
+
+	; For example, you could make sure Nextcloud sync is running
+
+	;If Not ProcessExists('nextcloud.exe') Then
+	;	Run("C:\Program Files (x86)\Nextcloud\nextcloud.exe")
+	;EndIf
+
 EndFunc
 
 Func HANDSSetupScreen()
@@ -113,6 +120,7 @@ Func HANDSSetupScreen()
 
 	GUICtrlCreateButton("Setup...", 50, 100, 300, 50)
 	GUICtrlSetOnEvent(-1, "SetupHANDS")
+
 
 EndFunc
 
