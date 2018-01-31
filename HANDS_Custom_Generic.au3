@@ -26,7 +26,7 @@ dim $handsAppData = @AppDataDir & "\HANDSBox\"
 ;$pdftk = $handsAppData & "\pdftk.exe"
 
 ; Change to reference your own organization
-dim $CustomHANDSBoxVersion = "Generic 1.0"
+dim $CustomHANDSBoxVersion = "Generic 1.1"
 
 ; Adjust this as needed, for example, by referencing your internal IT department and specifing any copyrighted software included.
 dim $HANDSBoxCopyright = "Software Distributed under the GNU GPL." & @CRLF & @CRLF & "For the latest version, see" & @CRLF & "https://github.com/LCDHD/handsbox"
@@ -56,6 +56,8 @@ dim $handsBoxHeight = 550
 dim $supervisionPath = "Supervision"
 dim $iniFile = $handsAppData & "hands_config.ini"
 dim $labelsSelectPath = $rootPath & $workBase & $labelsPath
+dim $newSoftwarePath = $rootPath & "HANDS Documents\Software\HANDS Box.exe"
+dim $softwareInstallPath = $handsAppData & "HANDS Box.exe"
 
 ; Field names that should be replaced with values from label
 ; Adjust these ONLY if you are using different field names in your labels.
@@ -105,13 +107,25 @@ Func RunHelp()
 EndFunc
 
 Func HANDSInit()
-	; Do custom start-up functions
+	; ; Do custom start-up functions
 
-	; For example, you could make sure Nextcloud sync is running
+	; ; For example, you could make sure Nextcloud sync is running
 
 	;If Not ProcessExists('nextcloud.exe') Then
 	;	Run("C:\Program Files (x86)\Nextcloud\nextcloud.exe")
 	;EndIf
+
+	; ; For example, have the HANDS Box install itself into a sensible
+	; ; location. This can prevent errors in nextcloud sync
+
+	;If FileGetTime($newSoftwarePath) <> FileGetTime($softwareInstallPath) Then
+	;	FileDelete($softwareInstallPath & ".old")
+	;	FileMove($softwareInstallPath,$softwareInstallPath & ".old")
+	;	FileCopy($newSoftwarePath,$softwareInstallPath)
+	;EndIf
+
+	; ; For example, install a desktop shortcut:
+	; FileInstall("HANDS Box.lnk",@UserProfileDir & "\Desktop\")
 
 EndFunc
 
