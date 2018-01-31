@@ -1,6 +1,11 @@
 # Changelog for HANDS box
 Notable changes to HANDS Box at each version
 
+## [1.3.5] - 2018-01-31
+### Changed
+- Add ability to check for missing digital signatures
+- Add column to Excel CSV output, to list found digital signatures
+
 ## [1.3.4] - 2018-01-25
 ### Changed
 - Added user's own name to the listing of home visitors in the Supervisor /

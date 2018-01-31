@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=hands-start-icon.ico
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=HANDS Box - Various Scripts to automate EMR Processing for the HANDS Program
-#AutoIt3Wrapper_Res_Fileversion=1.3.4.0
+#AutoIt3Wrapper_Res_Fileversion=1.3.5.0
 #AutoIt3Wrapper_Res_LegalCopyright=Free Software under GNU GPL, (c) 2016-2017 by Lake Cumberland District Health Department
 #AutoIt3Wrapper_Res_Language=1033
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -730,6 +730,10 @@ Func getSigNameInternal($cont,$startPos)
 		ConsoleWrite('No $nameStart')
 		Return ''
     EndIf
+	if BinaryToString(BinaryMid($cont,Floor($nameStart / 2)-2,2)) = "<>" Then
+		ConsoleWrite('Missing Signature Found')
+		Return 'MISSING SIGNATURE'
+	EndIf
 	$parenStart = StringInStr($cont,_StringToHex('('),0,1,$nameStart)
 	$parenStart += 2
 	$nameEnd = StringInStr($cont,_StringToHex(')'),0,1,$parenStart)
@@ -1281,6 +1285,9 @@ Func AnalyzeForms()        ; ANALYZE COLLECTION OF PDF FILES AND OUTPUT DATA TO 
 			ContinueLoop
 		EndIf
 
+		$sigName = getSigName($files[$i])
+		$strFields = $strFields & '"Signatures",'
+		$strValues = '"' & StringReplace($sigName,'"','""') & '",'
 
 		; Parse File Data
 		$f = FileOpen($fdffile,$FO_READ)
