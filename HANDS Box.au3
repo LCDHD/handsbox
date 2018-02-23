@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=hands-start-icon.ico
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=HANDS Box - Various Scripts to automate EMR Processing for the HANDS Program
-#AutoIt3Wrapper_Res_Fileversion=1.3.5.0
+#AutoIt3Wrapper_Res_Fileversion=1.3.6.0
 #AutoIt3Wrapper_Res_LegalCopyright=Free Software under GNU GPL, (c) 2016-2017 by Lake Cumberland District Health Department
 #AutoIt3Wrapper_Res_Language=1033
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -560,6 +560,8 @@ Func RunMain()             ; MAIN HANDS BOX WINDOW
 	HANDSSetupScreen()
 	GUICtrlCreateButton("Unlock a PDF", 350, 50, 300, 50)
 	GUICtrlSetOnEvent(-1, "UnlockPDF")
+	GUICtrlCreateButton("Repair PDF Form", 350, 100, 300, 50)
+	GUICtrlSetOnEvent(-1, "FixPDFForm")
 
     ;**************************************************************************
     ;Lower Panel
@@ -1446,4 +1448,26 @@ Func UnlockPDF()           ; USE PDFTK TO REMOVE COPY PROTECTION FROM PDF
 	FileMove($fname,$tfile)
 	ShellExecuteWait($pdftk,'"' & $tfile & '" output "' & $fname & '" drop_xmp drop_xfa',"","",@SW_HIDE)
 	ShellExecute($fname)
+EndFunc
+
+Func FixPDFForm()             ; Use PdfTk to extract and re-apply form data, to repair glitched files
+
+    CheckPDFTK()
+
+	$fname = FileOpenDialog("Select the PDF Form to Repair",@WorkingDir,"PDF Documents (*.pdf)")
+	if @error > 0 Then
+		MsgBox(0,"There was a problem","There was an error selecting the file")
+		Return 1
+	EndIf
+	$tfile = _TempFile(@TempDir,"~pdftk_",".pdf")
+	$tfdf = _TempFile(@TempDir,"~pdftk_",".fdf")
+	FileMove($fname,$tfile)
+	ShellExecuteWait($pdftk,'"' & $tfile & '" generate_fdf output "' & $tfdf & '"',"","",@SW_HIDE)
+	ShellExecuteWait($pdftk,'"' & $tfile & '" fill_form "' & $tfdf & '" output "' & $fname & '"',"","",@SW_HIDE)
+	If Not(FileExists($fname & ".original.pdf")) Then
+		FileMove($tfile,$fname & ".original.pdf")
+	EndIf
+	ShellExecute($fname)
+
+
 EndFunc
