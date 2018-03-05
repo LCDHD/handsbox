@@ -48,9 +48,9 @@
 
 ; Set some sensible default values here
 if(@OSArch = "X32") Then
-  global $pdftk = @HomeDrive & '\Program Files\PDFtk\bin\pdftk.exe'
+  global $pdftk = EnvGet("programfiles") &'\PDFtk\bin\pdftk.exe'
 Else
-  global $pdftk = @HomeDrive & 'Program Files (x86)\PDFtk\bin\pdftk.exe'
+  global $pdftk = EnvGet("programfiles(x86)") & '\PDFtk\bin\pdftk.exe'
 EndIf
 
 ; Custom Includes
