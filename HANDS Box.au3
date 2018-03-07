@@ -901,37 +901,54 @@ Func QueueToSupervisor()                ; INITIATE QUEUE TO SUPERVISOR
 EndFunc   ;==>QueueToSupervisor
 
 Func FileToCharts()                     ; FILE QUEUED FORMS INTO THE CHARTS, BASED ON MATCHING FILE NAMES
+
+	; The idea here is to extract the patient's name from the file name of each file in the "chart queue"
+	; Then, look for a folder with exactly the same name somewhere in the charts, and move the file there.
+
     If ProcessCheck() Then
 		Return 1
 	EndIf
 	local $chartnames[0]
 	local $chartfolders[0]
 	ProgressOn("HANDS Supervisor Functions","Filing Forms in Charts","Initializing",10,10,$DLG_MOVEABLE)
+
+	; Check to see if there are any forms in the filing queue
     If countPath($rootPath & $workBase & $queueToChart) = 0 Then
 		MsgBox(0,"HANDS Supervisor Functions","There are not forms in the queue. Please open the queue first and put some forms into it.")
 		ProgressOff()
 		Return 1
 	EndIf
+
+	; Make sure that the path to the charts exists and is accessible (helpful when stored on network drives)
 	If Not FileExists($webRoot) Then
 		MsgBox(0,"HANDS Supervisor Functions","I cannot access the charts at the moment. Please try opening the charts folder first.")
 		ProgressOff()
         Return 1
 	EndIf
+
+	; Get a listing of all files in the filing queue
 	ProgressSet(5,"Scanning Forms to File")
 	$formsToFile = _FileListToArray($rootPath & $workBase & $queueToChart)
+
+	; Loop through all "chart sets" specificed by wildcard $chartsPath
+
 	ProgressSet(10,"Scanning Charts")
     Local $charts[0]
 	Local $cfolders[0]
 	$cfolders = _FileListToArray($webRoot,$chartsPath,$FLTA_FOLDERS,True)
-    ;_ArrayDisplay($chartfolders,"$chartfolders")
+
+	; Get a recusrive listing of all folders in each "chart set"
 	For $i = 1 to Ubound($cfolders) - 1
 		$chartssingle = _FileListToArrayRec($cfolders[$i],"*",$FLTA_FOLDERS,-7,$FLTAR_SORT,$FLTAR_FULLPATH)
 		_ArrayDelete($chartssingle,0)
 		_ArrayConcatenate($charts,$chartssingle)
 	Next
-    ;_ArrayDisplay($charts,"$charts")
 
 	;Build $chartnames and $chartfolders arrays for form destinations
+	; The combination of these two arrays will work as an associative array, so we can look up the
+	; "chart name" (patient name) in the first array, then reference the folder using the same key
+	; on the $chartfolders array
+
 	For $path in $charts
 		Local $pathDrive
 		Local $pathDirectory
@@ -954,13 +971,10 @@ Func FileToCharts()                     ; FILE QUEUED FORMS INTO THE CHARTS, BAS
 			EndIf
 		EndIf
 	Next
-    ;_ArrayDisplay($chartfolders,"$chartnames")
 
 	;Loop over each form in queue and file it if a match is found
-	$chartnum = 0
+	$chartnum = 0  ; Counting, for progress bar
 	$cantfile = 0
-	;_ArrayDisplay($formsToFile, "$formsToFile")
-	;_ArrayDisplay($chartnames,"$chartnames")
 	For $path in $formsToFile
         $chartnum += 1
 		$pathname = StringMid($path,13)
@@ -971,6 +985,7 @@ Func FileToCharts()                     ; FILE QUEUED FORMS INTO THE CHARTS, BAS
 		$pathname = NormalizeName($pathname)
 		$folderindex = _ArraySearch($chartnames,$pathname)
 		if $folderindex = -1 Then
+			; There is no matching chart folder. We'll count this as un-fileable and move on.
 			$cantfile += 1
 		Else
 			HANDSLog("Chart Filing","Filing '" & $path & "' to '" & $chartfolders[$folderindex] & "'")
