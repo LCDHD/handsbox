@@ -91,13 +91,13 @@ Func SetupHANDS()
 
 	;Create a basic folder structure
 
-	DirCreate($rootPath & $workBase & $workingPath)
-	DirCreate($rootPath & $workBase & $correctionPath)
-	DirCreate($rootPath & $workBase & $trackingPath)
-	DirCreate($rootPath & $workBase & $labelsPath)
-	DirCreate($rootPath & $workBase & $tosupervisorPath)
-	DirCreate($rootPath & $workBase & $todataPath)
-	DirCreate($rootPath & $formsPath)
+    CreateUserFolders()
+
+	If Not FileExists($rootPath & $formsPath & "\English") Then
+		CreateTemplateFolders()
+		MsgBox(0,"HANDS Box","Please Re-Open the HANDS Box to continue.")
+		Exit
+	EndIf
 
 EndFunc   ;==>SetupHANDS
 

@@ -709,7 +709,25 @@ Func CLOSEClicked()       ; Cleanup and Exit the HANDS Box
 	Exit
 EndFunc   ;==>CLOSEClicked
 
+Func CreateUserFolders()   ; Setup User Folder Structure
+	DirCreate($rootPath & $workBase & $workingPath)
+	DirCreate($rootPath & $workBase & $correctionPath)
+	DirCreate($rootPath & $workBase & $trackingPath)
+	DirCreate($rootPath & $workBase & $labelsPath)
+	DirCreate($rootPath & $workBase & $tosupervisorPath)
+	DirCreate($rootPath & $workBase & $todataPath)
+	DirCreate($rootPath & $formsPath)
 
+EndFunc
+
+Func CreateTemplateFolders() ; Setup Master Template Folders
+    DirCreate($rootPath & $formsPath & "\English")
+    DirCreate($rootPath & $formsPath & "\Spanish")
+	DirCreate($rootPath & $supervisionFormsPath)
+	FileInstall("billingcodes.txt",$rootPath & $formsPath & "\billingcodes.txt")
+	FileInstall("EXAMP01 - Example Form (2018-03) [A].pdf",$rootPath & $formsPath & "\English\EXAMP01 - Example Form (2018-03) [A].pdf")
+
+EndFunc
 
 
 ;************************* FOLDER QUEUE FUNCTIONS *****************************
