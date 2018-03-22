@@ -51,7 +51,7 @@ dim $correctionPath = "Needs Correction"
 dim $trackingPath = "Tracking Form"
 dim $labelsPath = "Labels"
 dim $logPath = "Logs"
-dim $handsBoxHeight = 550
+dim $handsBoxHeight = 593
 
 dim $supervisionPath = "Supervision"
 dim $iniFile = $handsAppData & "hands_config.ini"
@@ -109,23 +109,26 @@ EndFunc
 Func HANDSInit()
 	; ; Do custom start-up functions
 
-	; ; For example, you could make sure Nextcloud sync is running
-
-	;If Not ProcessExists('nextcloud.exe') Then
-	;	Run("C:\Program Files (x86)\Nextcloud\nextcloud.exe")
-	;EndIf
-
 	; ; For example, have the HANDS Box install itself into a sensible
-	; ; location. This can prevent errors in nextcloud sync
+	; ; location. This can prevent errors in sync
 
-	;If FileGetTime($newSoftwarePath) <> FileGetTime($softwareInstallPath) Then
-	;	FileDelete($softwareInstallPath & ".old")
-	;	FileMove($softwareInstallPath,$softwareInstallPath & ".old")
-	;	FileCopy($newSoftwarePath,$softwareInstallPath)
-	;EndIf
+	If FileGetTime($newSoftwarePath) <> FileGetTime($softwareInstallPath) Then
+		FileDelete($softwareInstallPath & ".old")
+		FileMove($softwareInstallPath,$softwareInstallPath & ".old")
+		FileCopy($newSoftwarePath,$softwareInstallPath)
+	EndIf
 
 	; ; For example, install a desktop shortcut:
-	; FileInstall("HANDS Box.lnk",@UserProfileDir & "\Desktop\")
+	FileInstall("HANDS Box.lnk",@UserProfileDir & "\Desktop\")
+
+	; Check to see if we need to manually run sync again
+	If FileExists($handsAppData & "editsync.lock") Then
+		If MsgBox($MB_YESNO,"HANDS Box","You recently performed an advanced compare/sync. You must run synchronize again. Shall I start the sync now?") = $IDYes Then
+			RunSynchronize()
+		Else
+			Exit 1
+		EndIf
+	EndIf
 
 EndFunc
 
@@ -139,6 +142,34 @@ Func HANDSSetupScreen()
 EndFunc
 
 Func HANDSBoxBottomButtons()
+	GUICtrlCreateButton("Synchronize", 1, 550, 180, 40)
+	GUICtrlSetOnEvent(-1, "RunSynchronize")
+	GUICtrlCreateButton("Advanced Compare/Sync", 600, 550, 195, 40)
+	GUICtrlSetOnEvent(-1, "EditSynchronize")
 
+EndFunc
 
+Func RunSynchronize()
+    If ProcessCheck() Then
+		Return 1
+	EndIf
+	HANDSLog("Sync","")
+	If FileExists($handsAppData & "editsync.lock") Then
+	    FileDelete($handsAppData & "editsync.lock")
+    EndIf
+	FileInstall("Sync HANDS Box.ffs_batch",$handsAppData & "Sync HANDS Box.ffs_batch")
+	ShellExecute($handsAppData & "Sync HANDS Box.ffs_batch")
+EndFunc
+
+Func EditSynchronize()
+    If ProcessCheck() Then
+		Return 1
+	EndIf
+	HANDSLog("EditSync","")
+	FileInstall("Sync HANDS Box.ffs_batch",$handsAppData & "Sync HANDS Box.ffs_batch")
+	ShellExecute($handsAppData & "Sync HANDS Box.ffs_batch","","",$SHEX_EDIT)
+	$f = FileOpen($handsAppData & "editsync.lock",$FO_OVERWRITE)
+	FileWrite($f,"TRUE")
+	FileClose($f)
+	Exit 1
 EndFunc

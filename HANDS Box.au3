@@ -2,7 +2,7 @@
 #AutoIt3Wrapper_Icon=hands-start-icon.ico
 #AutoIt3Wrapper_UseX64=y
 #AutoIt3Wrapper_Res_Description=HANDS Box - Various Scripts to automate EMR Processing for the HANDS Program
-#AutoIt3Wrapper_Res_Fileversion=1.3.6.0
+#AutoIt3Wrapper_Res_Fileversion=1.3.7.0
 #AutoIt3Wrapper_Res_LegalCopyright=Free Software under GNU GPL, (c) 2016-2017 by Lake Cumberland District Health Department
 #AutoIt3Wrapper_Res_Language=1033
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
@@ -356,7 +356,7 @@ Func LabelCreate()
 	EndIf
 	FileWrite($f, $fullFDF)
 	FileClose($f)
-	FileInstall("000 - Blank Label.pdf",$labelsSelectPath & "\",$FC_OVERWRITE)
+	FileInstall("forms\000 - Blank Label.pdf",$labelsSelectPath & "\",$FC_OVERWRITE)
 	LabelCLOSEClicked()
 EndFunc   ;==>LabelCreate
 
@@ -724,8 +724,8 @@ Func CreateTemplateFolders() ; Setup Master Template Folders
     DirCreate($rootPath & $formsPath & "\English")
     DirCreate($rootPath & $formsPath & "\Spanish")
 	DirCreate($rootPath & $supervisionFormsPath)
-	FileInstall("billingcodes.txt",$rootPath & $formsPath & "\billingcodes.txt")
-	FileInstall("EXAMP01 - Example Form (2018-03) [A].pdf",$rootPath & $formsPath & "\English\EXAMP01 - Example Form (2018-03) [A].pdf")
+	FileInstall("forms\billingcodes.txt",$rootPath & $formsPath & "\billingcodes.txt")
+	FileInstall("forms\EXAMP01 - Example Form (2018-03) [A].pdf",$rootPath & $formsPath & "\English\EXAMP01 - Example Form (2018-03) [A].pdf")
 
 EndFunc
 
