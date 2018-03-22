@@ -726,6 +726,8 @@ Func CreateTemplateFolders() ; Setup Master Template Folders
 	DirCreate($rootPath & $supervisionFormsPath)
 	FileInstall("forms\billingcodes.txt",$rootPath & $formsPath & "\billingcodes.txt")
 	FileInstall("forms\EXAMP01 - Example Form (2018-03) [A].pdf",$rootPath & $formsPath & "\English\EXAMP01 - Example Form (2018-03) [A].pdf")
+	FileInstall("forms\EXAMP02 - Sample Log (2018-03) [C].pdf",$rootPath & $formsPath & "\English\EXAMP02 - Sample Log (2018-03) [C].pdf")
+	FileInstall("forms\PACK10 - Example Packet (2018-03).txt",$rootPath & $formsPath & "\English\PACK10 - Example Packet (2018-03).txt")
 
 EndFunc
 
