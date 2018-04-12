@@ -1,6 +1,18 @@
 # Changelog for HANDS box
 Notable changes to HANDS Box at each version
 
+## [1.3.8] - 2018-04-12
+### Added
+- Buttons to "Queue" from corrections back to supervisor / data processing
+- Added hands_default.ini to override most configuration options
+  without having to recompile the .exe
+- Added hooks to use versatile .cmd scripts for setup and installing
+
+### Changed
+- Improved handling of missing signatures
+- Widened layout of "Queue" files
+- Improved Documentation
+
 ## [1.3.5] - 2018-01-31
 ### Changed
 - Add ability to check for missing digital signatures

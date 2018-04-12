@@ -1,45 +1,38 @@
 # handsbox
 Folder-based Electronic Forms Records for Kentucky HANDS Program
 
-# Prerequisites
-
-In order to *build* the tool, you will also need to install the following:
-- [AutoIt](https://www.autoitscript.com/site/autoit/downloads/)
-- [PDFtk](https://www.pdflabs.com/tools/pdftk-the-pdf-toolkit/)
-
-In order to *use* the tool, you will need
+#In order to *use* the HANDS Box, you will need:
 - A file share for storing charts and working files. Nextcloud or Owncloud
-  are good options, although it's possible to use this using a regular
-  Windows file share or WebDAV share, optionally with syncing software
-  such as FreeFileSync
-- PDF software (see below)
+  are good options. You can also use this using a regular Windows file share
+- If you choose to store the charts and working files on a Windows file share,
+  you will need to install
+  FreeFileSync(https://www.freefilesync.org/download.php)
+  or some other similar software, such as
+  MinFFS(https://github.com/abcdec/MinFFS). The HANDS Box has been tested with
+  both of these. Any other software that will keep folders in sync should
+  work fine, such as
+  SyncToy(https://www.microsoft.com/en-us/download/details.aspx?id=15155)
+  although we have not testes with these.
 
-A PDF reader / editor capable of:
-- Filling PDF forms
-- Saving filled forms
-- Digitally signing documents
-- Capturing and affixing signatures from participants (optional)
+- You will need a good PDF reader / editor capable of:
+    - Filling PDF forms
+    - Saving filled forms
+    - Digitally signing documents
+    - Capturing and affixing signatures from participants (optional)
 
 This has been tested with the following:
 - [Foxit Reader](https://www.foxitsoftware.com/pdf-reader/) (Recommended)
-- [Nitro Pro](https://www.gonitro.com/) (Recommended)
-- [Nitro PDF Reader](https://www.gonitro.com/pdf-reader)
+- [Nitro Pro](https://www.gonitro.com/)
 - [Adobe Acrobat Reader DC](https://get.adobe.com/reader/)
 - [Nuance PowerPDF](https://www.nuance.com/print-capture-and-pdf-solutions/pdf-and-document-conversion/power-pdf-converter.html)
 - [Master PDF Editor](https://code-industry.net/masterpdfeditor/)
 
 # Quick Start
 
-- Install all the prerequisites listed above.
-- Clone the GIT Repository into a local folder
-- Copy HANDS_Custom_Generic.au3 to HANDS_Custom.au3
-- Copy "pdftk.exe" and "libiconv2.dll" from
-  "C:\Program Files (x86)\PDFtk\bin\" into the local project folder
-- Open `HANDS Box.au3`, press F5 to run, or Ctrl-F7 to compile to an EXE.
-- Run the `HANDS Box`, click the "Setup" tab and then click the "Setup..."
-  button.
-- Open `Documents\Hands Briefcase\HANDS Documents\Forms,` create folders named
-  `English` and `Spanish` and copy PDF template forms here.
+- The default configuration assumes that all deployment files are copied to
+  `Documents\Hands Briefcase\HANDS Documents\Software`
+- Run `HANDS Box.exe` and choose the option to 'Install'
+- Navigate to the `Setup` tab and choose "Setup Folders"
 
 # Software Overview and Tools
 
@@ -116,3 +109,13 @@ PDF Templates should be named with the following convention:
 ```
 FORM NUMBER - Form Title (Form Date) [CODE].pdf
 ```
+
+## Building the software
+
+In order to build the software, you will need to download
+and install AutoIt, install other prequisites, and compile.
+
+Find details under BUILDING(BUILDING.md)
+
+## Latest Changes
+Find a list of latest changes in CHANGLOG(CHANGELOG.md)
