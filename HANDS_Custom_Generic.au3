@@ -63,8 +63,8 @@ dim $updateInstallScript = getIni("updateInstallScript",@ScriptDir & "\updateins
 
 dim $supervisionPath = getIni("supervisionPath","Supervision")
 dim $labelsSelectPath = getIni("labelsSelectPath",$rootPath & $workBase & $labelsPath)
-dim $checkUpdateFile1 = getIni("checkUpdateFile1",$handsAppData & "HANDS Box.exe")
-dim $checkUpdateFile2 = getIni("checkUpdateFile2",$rootPath & "HANDS Documents\Software\HANDS Box.exe")
+dim $checkUpdateFile1 = getIni("checkUpdateFile1",$iniDefaults)
+dim $checkUpdateFile2 = getIni("checkUpdateFile2",$rootPath & "HANDS Documents\Software\hands_defaults.ini")
 
 
 ; Field names that should be replaced with values from label
@@ -105,7 +105,7 @@ Func SetupHANDS()
 	EndIf
 
 	if $setupScript <> "" Then
-	    RunWait(@ComSpec & " /c " & $setupScript)
+	    RunWait(@ComSpec & ' /c "' & $setupScript & '"',@WorkingDir)
 	EndIf
 
 	;Create a basic folder structure
@@ -132,7 +132,7 @@ Func HANDSInit()
 
 	; Do custom start-up functions
 	if $initScript <> "" Then
-	    RunWait(@ComSpec & " /c " & $initScript)
+	    RunWait(@ComSpec & ' /c "' & $initScript & '"',@WorkingDir,@SW_HIDE)
 	EndIf
 
     If $checkUpdateFile1 <> "" and $checkUpdateFile2 <> "" Then
