@@ -1,9 +1,9 @@
 #Region ;**** Directives created by AutoIt3Wrapper_GUI ****
 #AutoIt3Wrapper_Icon=hands-start-icon.ico
-#AutoIt3Wrapper_UseX64=y
+#AutoIt3Wrapper_UseX64=n
 #AutoIt3Wrapper_Res_Description=HANDS Box - Various Scripts to automate EMR Processing for the HANDS Program
-#AutoIt3Wrapper_Res_Fileversion=1.3.7.0
-#AutoIt3Wrapper_Res_LegalCopyright=Free Software under GNU GPL, (c) 2016-2017 by Lake Cumberland District Health Department
+#AutoIt3Wrapper_Res_Fileversion=1.3.8
+#AutoIt3Wrapper_Res_LegalCopyright=Free Software under GNU GPL, (c) 2016-2018 by Lake Cumberland District Health Department
 #AutoIt3Wrapper_Res_Language=1033
 #EndRegion ;**** Directives created by AutoIt3Wrapper_GUI ****
 ;******************************************************************************
@@ -252,16 +252,6 @@ Func NewOrEditLabel($edit)   ; CREATE/EDIT LABEL WINDOW
 	$labelFields[8] = GUICtrlCreateInput("", 220, 410, 20, 20) ; Hidden field for _LCDHD_NAME
 	$labelFields[9] = GUICtrlCreateInput("@_LCDHD_FORMDATE", 220, 400, 20, 20) ; Hidden field for _LCDHD_FORMDATE
 
-    ;GUICtrlCreateLabel("FT - First Time Dad",200,220)
-	;GUICtrlSetColor(-1,0x0000FF)
-    ;GUICtrlCreateLabel("NA - KMA Not Active",200,235)
-	;GUICtrlSetColor(-1,0xFF0000)
-    ;GUICtrlCreateLabel("TO - Tobacco",200,250)
-	;GUICtrlSetColor(-1,0x009911)
-    ;GUICtrlCreateLabel("MG - Multi gravida",200,265)
-	;GUICtrlSetColor(-1,0x888800)
-    ;GUICtrlCreateLabel("PG - Prima gravida",200,280)
-
     if $edit Then
 	    GUICtrlCreateButton("Modify Label", 1, 300, 338, 30)
 	Else
@@ -273,6 +263,7 @@ Func NewOrEditLabel($edit)   ; CREATE/EDIT LABEL WINDOW
 
 	$billingcodes = FileRead($rootPath & $formsPath & "\billingcodes.txt")
 	$billingcodes = StringReplace($billingcodes,@CRLF,"|")
+    $billingcodes = StringReplace($billingcodes,@LF,"|")
 
 	if $edit Then
 		local $aFields[0]
@@ -356,7 +347,7 @@ Func LabelCreate()
 	EndIf
 	FileWrite($f, $fullFDF)
 	FileClose($f)
-	FileInstall("forms\000 - Blank Label.pdf",$labelsSelectPath & "\",$FC_OVERWRITE)
+	FileInstall("forms_src\000 - Blank Label.pdf",$labelsSelectPath & "\",$FC_OVERWRITE)
 	LabelCLOSEClicked()
 EndFunc   ;==>LabelCreate
 
@@ -523,6 +514,8 @@ Func RunMain()             ; MAIN HANDS BOX WINDOW
 	GUICtrlSetOnEvent(-1, "QueueToSupervisor")
 	GUICtrlCreateButton("Corrections to Supervisor", 380, 495, 200, 30)
 	GUICtrlSetOnEvent(-1, "CorrectionsToSupervisor")
+	GUICtrlCreateButton("Corrections to Data P.", 580, 495, 200, 30)
+	GUICtrlSetOnEvent(-1, "CorrectionsToDataP")
 
 	If $HANDSRole = "Supervisor" Then
 		GUICtrlCreateButton("Queue to Data Processing", 580, 410, 200, 30)
@@ -723,13 +716,8 @@ Func CreateUserFolders()   ; Setup User Folder Structure
 EndFunc
 
 Func CreateTemplateFolders() ; Setup Master Template Folders
-    DirCreate($rootPath & $formsPath & "\English")
-    DirCreate($rootPath & $formsPath & "\Spanish")
-	DirCreate($rootPath & $supervisionFormsPath)
-	FileInstall("forms\billingcodes.txt",$rootPath & $formsPath & "\billingcodes.txt")
-	FileInstall("forms\EXAMP01 - Example Form (2018-03) [A].pdf",$rootPath & $formsPath & "\English\EXAMP01 - Example Form (2018-03) [A].pdf")
-	FileInstall("forms\EXAMP02 - Sample Log (2018-03) [C].pdf",$rootPath & $formsPath & "\English\EXAMP02 - Sample Log (2018-03) [C].pdf")
-	FileInstall("forms\PACK10 - Example Packet (2018-03).txt",$rootPath & $formsPath & "\English\PACK10 - Example Packet (2018-03).txt")
+	DirCopy(@ScriptDir & "\forms",$formsPath)
+	DirCopy(@ScriptDir & "\supervisionforms",$supervisionFormsPath)
 
 EndFunc
 
@@ -744,6 +732,7 @@ Func getSigName($pdf)
 EndFunc
 
 Func getSigNameInternal($cont,$startPos)
+	dim $missing = false
 	$sigStart = StringInStr($cont,_StringToHex("/adbe.pkcs7.detached"),1,1,$startPos)
 	if $sigStart = 0 Then
 		ConsoleWrite('No $sigStart')
@@ -755,8 +744,8 @@ Func getSigNameInternal($cont,$startPos)
 		Return ''
     EndIf
 	if BinaryToString(BinaryMid($cont,Floor($nameStart / 2)-2,2)) = "<>" Then
-		ConsoleWrite('Missing Signature Found')
-		Return 'MISSING SIGNATURE'
+		ConsoleWrite('Possible Missing Signature Found')
+		$missing = true
 	EndIf
 	$parenStart = StringInStr($cont,_StringToHex('('),0,1,$nameStart)
 	$parenStart += 2
@@ -765,8 +754,10 @@ Func getSigNameInternal($cont,$startPos)
 		ConsoleWrite('No $parenEnd')
 		Return ''
     EndIf
-	;ConsoleWrite('Start and End: ' & $nameStart & '-' & $parenEnd)
 	$sig = BinaryToString(BinaryMid($cont,Floor($parenStart / 2),Floor(($nameEnd - $parenStart)/2)))
+	if $missing Then
+		$sig = "MISSING SIGNATURE"
+	Endif
 	$nextSig = getSigNameInternal($cont,$nameEnd)
 	if $nextSig = "" Then
 		return $sig
@@ -792,21 +783,21 @@ Func QueueToFolder($src,$dst,$purpose,$selectAll)  ; CREATE WINDOW TO CONFIRM FI
 	ProgressOn("HANDS Box","Scanning Forms")
 
 
-	global $HANDSFolderQueueConfirm = GUICreate("Confirm Queue " & $purpose,700,400,-1,-1,$WS_POPUP+$WS_CAPTION,$WS_EX_TOPMOST)
+	global $HANDSFolderQueueConfirm = GUICreate("Confirm Queue " & $purpose,760,400,-1,-1,$WS_POPUP+$WS_CAPTION,$WS_EX_TOPMOST)
 	GUICtrlCreateLabel("Are you ready to queue the following forms " & $purpose & "?" _
 	          & @CRLF & @CRLF & _
 			  "Please confirm that you have reviewed and signed every form listed below:",10,10)
 
-	GUICtrlCreateButton("Queue Selected Files",5,360,270,35)
+	GUICtrlCreateButton("Queue Selected Files",5,360,375,35)
 	GUICtrlSetOnEvent(-1,"QueueToFolderFinish")
-	GUICtrlCreateButton("Cancel",275,360,270,35)
+	GUICtrlCreateButton("Cancel",380,360,375,35)
 	GUICtrlSetOnEvent(-1,"QueueToFolderCancel")
-	GUICtrlCreateButton("Select All",275,330,100,30)
+	GUICtrlCreateButton("Select All",380,330,100,30)
 	GUICtrlSetOnEvent(-1,"QueueToFolderSelectAll")
-	GUICtrlCreateButton("Select None",175,330,100,30)
+	GUICtrlCreateButton("Select None",280,330,100,30)
 	GUICtrlSetOnEvent(-1,"QueueToFolderSelectNone")
 
-    global $HANDSFolderList = GUICtrlCreateListView("File Name | Modified | Signed            ",5,50,690,270,-1,$LVS_EX_CHECKBOXES)
+    global $HANDSFolderList = GUICtrlCreateListView("File Name | Modified | Signed",5,50,750,270,-1,$LVS_EX_CHECKBOXES)
     $i = 0
 	while $i < $aForms[0]
 		ProgressSet($i * 100 / $aForms[0],$aForms[$i])
@@ -927,6 +918,14 @@ Func CorrectionsToSupervisor()                ; INITIATE QUEUE TO SUPERVISOR
 	$src = $rootPath & $workBase & $correctionPath
 	$dst = $rootPath & $workBase & $tosupervisorPath
 	QueueToFolder($src,$dst,"to supervisor",True)
+	RefreshMain()
+EndFunc   ;==>QueueToSupervisor
+
+Func CorrectionsToDataP()                ; INITIATE QUEUE TO Data Processing
+	; Triggered from the Home Visitor screen. Move files to the Data Processing folder, and make a backup copy.
+	$src = $rootPath & $workBase & $correctionPath
+	$dst = $rootPath & $workBase & $todataPath
+	QueueToFolder($src,$dst,"to data processing",True)
 	RefreshMain()
 EndFunc   ;==>QueueToSupervisor
 

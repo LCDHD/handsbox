@@ -10,54 +10,62 @@
 #include <WindowsConstants.au3>
 #include <Constants.au3>
 #include <File.au3>
+#include <WinAPISys.au3>
 
 ;******************************************************************************
 ;                          GLOBAL VARIABLES
 ;******************************************************************************
 
 dim $handsAppData = @AppDataDir & "\HANDSBox\"
+dim $iniFile = $handsAppData & "hands_config.ini"
+dim $iniDefaults = @ScriptDir & "\hands_defaults.ini"
 
-;To embed PDFTk, uncomment the following 4 LINES,
-;and copy the referenced files into the source directory:
-
-;DirCreate($handsAppData)
-;FileInstall("pdftk.exe",$handsAppData & "\pdftk.exe")
-;FileInstall("libiconv2.dll",$handsAppData & "\libiconv2.dll")
-;$pdftk = $handsAppData & "\pdftk.exe"
 
 ; Change to reference your own organization
-dim $CustomHANDSBoxVersion = "Generic 1.1"
+dim $CustomHANDSBoxVersion = getIni('CustomHANDSBoxVersion',"Generic 1.2")
 
 ; Adjust this as needed, for example, by referencing your internal IT department and specifing any copyrighted software included.
 dim $HANDSBoxCopyright = "Software Distributed under the GNU GPL." & @CRLF & @CRLF & "For the latest version, see" & @CRLF & "https://github.com/LCDHD/handsbox"
 
 ; Paths, adjust for your environment
 
-dim $rootPath = @UserProfileDir & "\Documents\HANDS Briefcase\"
-dim $webRoot = $rootPath
-dim $formsPath = "HANDS Documents\Forms"
-dim $supervisionFormsPath = "HANDS Documents\Supervision Forms"
-dim $chartsPath = "Charts.*"
-dim $homevisitorPath = $rootPath
-dim $homevisitorWildcard = "Working.*"
-dim $workBase = "Working." & @UserName & "\"
+dim $rootPath = getIni("rootPath","%userprofile%\Documents\HANDS Briefcase\")
+dim $webRoot = getIni("webRoot",$rootPath)
+dim $formsPath = getIni("formsPath","HANDS Documents\Forms")
+dim $supervisionFormsPath = getIni("supervisionFormsPath","HANDS Documents\Supervision Forms")
+dim $chartsPath = getIni("chartsPath","Charts.*")
+dim $homevisitorPath = getIni("homevisitorPath",$rootPath)
+dim $homevisitorWildcard = getIni("homevisitorWildcard","Working.*")
+dim $workBase = getIni("workBase","Working.%username%\")
 
 
-dim $workingPath = "Work In Progress"
-dim $queueToChart = "Queue To Chart"
-dim $todataPath = "To Data Processing"
-dim $tosupervisorPath = "To Supervisor"
-dim $correctionPath = "Needs Correction"
-dim $trackingPath = "Tracking Form"
-dim $labelsPath = "Labels"
-dim $logPath = "Logs"
-dim $handsBoxHeight = 593
+dim $workingPath = getIni("workingPath","Work In Progress")
+dim $queueToChart = getIni("queueToChart","Queue To Chart")
+dim $todataPath = getIni("todataPath","To Data Processing")
+dim $tosupervisorPath = getIni("tosupervisorPath","To Supervisor")
+dim $correctionPath = getIni("correctionPath","Needs Correction")
+dim $trackingPath = getIni("trackingPath","Tracking Form")
+dim $labelsPath = getIni("labelsPath","Labels")
+dim $logPath = getIni("logPath","Logs")
+dim $showSyncButtons = getIni("showSyncButtons","Both")
 
-dim $supervisionPath = "Supervision"
-dim $iniFile = $handsAppData & "hands_config.ini"
-dim $labelsSelectPath = $rootPath & $workBase & $labelsPath
-dim $newSoftwarePath = $rootPath & "HANDS Documents\Software\HANDS Box.exe"
-dim $softwareInstallPath = $handsAppData & "HANDS Box.exe"
+dim $handsBoxHeight = 550
+if $showSyncButtons = "Sync" or $showSyncButtons = "Both" Then
+    $handsBoxHeight = 593
+EndIf
+
+dim $syncScript = getIni("syncScript",@ScriptDir & "\Sync HANDS Box.ffs_batch")
+dim $advancedSyncScript = getIni("advancedSyncScript",@ScriptDir & "\Sync HANDS Box.ffs_batch")
+dim $advancedSyncScriptVerb = getIni("advancedSyncScriptVerb","edit")
+dim $setupScript = getIni("setupScript","")
+dim $initScript = getIni("initScript","")
+dim $updateInstallScript = getIni("updateInstallScript",@ScriptDir & "\updateinstall.cmd")
+
+dim $supervisionPath = getIni("supervisionPath","Supervision")
+dim $labelsSelectPath = getIni("labelsSelectPath",$rootPath & $workBase & $labelsPath)
+dim $checkUpdateFile1 = getIni("checkUpdateFile1",$handsAppData & "HANDS Box.exe")
+dim $checkUpdateFile2 = getIni("checkUpdateFile2",$rootPath & "HANDS Documents\Software\HANDS Box.exe")
+
 
 ; Field names that should be replaced with values from label
 ; Adjust these ONLY if you are using different field names in your labels.
@@ -68,10 +76,15 @@ dim $labelFieldsNames[10] = ["_LCDHD_FSW", "_LCDHD_SSN", "_LCDHD_CLID", "_LCDHD_
 dim $blankLabelName = "000 - Blank Label.pdf"
 
 ; Processes which, if running, should prevent the Sync from firing
-dim $checkPDFProcess = ["NitroPDF.exe","Acrobat.exe","Acrord32.exe","Excel.exe","FoxitReader.exe"]
+dim $checkProcessStr = getIni('checkProcess','Acrobat.exe,Acrord32.exe,Excel.exe,FoxitReader.exe')
+dim $checkPDFProcess = StringSplit($checkProcessStr,',',$STR_NOCOUNT)
 
-; Set this to a random string for increase security
-dim $encConstant = "CHANGE ME" ; For encrypting the saved access key
+
+If Not FileExists($pdftk) Then
+    $pdftk = @ScriptDir & "\pdftk.exe"
+EndIf
+
+$pdftk = getIni("pdftk",$pdftk)
 
 
 
@@ -79,17 +92,24 @@ dim $encConstant = "CHANGE ME" ; For encrypting the saved access key
 ;                          HANDS FOLDER SETUP FUNCTIONS
 ;******************************************************************************
 
+Func getIni($key,$default)
+	$val = IniRead($iniFile,"General",$key,$default)
+	$val = IniRead($iniDefaults,"General",$key,$val)
+	return _WinAPI_ExpandEnvironmentStrings($val)
+EndFunc
+
 Func SetupHANDS()
 	; A great place to put any scripts that should be run on every machine to set up the HANDS box in your envionment
 	If MsgBox($MB_YESNO, "HANDS Setup", "This procedure will set up the necessary folders and mapped drive(s) for the HANDS staff. Would you like to continue?") = $IDNO Then
 		Return 1
 	EndIf
 
-
-	;Set up mapped drives here
-	;RunWait(@ComSpec & " /c net use H: \\server\HANDS")
+	if $setupScript <> "" Then
+	    RunWait(@ComSpec & " /c " & $setupScript)
+	EndIf
 
 	;Create a basic folder structure
+	DirCreate($handsAppData)
 
     CreateUserFolders()
 
@@ -107,26 +127,19 @@ Func RunHelp()
 EndFunc
 
 Func HANDSInit()
-	; ; Do custom start-up functions
 
-	; ; For example, have the HANDS Box install itself into a sensible
-	; ; location. This can prevent errors in sync
+	DirCreate($handsAppData)
 
-	If FileGetTime($newSoftwarePath) <> FileGetTime($softwareInstallPath) Then
-		FileDelete($softwareInstallPath & ".old")
-		FileMove($softwareInstallPath,$softwareInstallPath & ".old")
-		FileCopy($newSoftwarePath,$softwareInstallPath)
+	; Do custom start-up functions
+	if $initScript <> "" Then
+	    RunWait(@ComSpec & " /c " & $initScript)
 	EndIf
 
-	; ; For example, install a desktop shortcut:
-	FileInstall("HANDS Box.lnk",@UserProfileDir & "\Desktop\")
-
-	; Check to see if we need to manually run sync again
-	If FileExists($handsAppData & "editsync.lock") Then
-		If MsgBox($MB_YESNO,"HANDS Box","You recently performed an advanced compare/sync. You must run synchronize again. Shall I start the sync now?") = $IDYes Then
-			RunSynchronize()
-		Else
-			Exit 1
+    If $checkUpdateFile1 <> "" and $checkUpdateFile2 <> "" Then
+		If FileGetTime($checkUpdateFile1,0,1) <> FileGetTime($checkUpdateFile2,0,1) Then
+			If MsgBox($MB_YESNO,"HANDS Box Updater","There is an update to the HANDS Box. Would you like to install it now?")  = $IDYES Then
+				UpdateInstall()
+			EndIf
 		EndIf
 	EndIf
 
@@ -135,17 +148,31 @@ EndFunc
 Func HANDSSetupScreen()
 	; Add your own custom buttons to the setup screen
 
-	GUICtrlCreateButton("Setup...", 50, 100, 300, 50)
+	GUICtrlCreateButton("Setup Folders", 50, 100, 300, 50)
 	GUICtrlSetOnEvent(-1, "SetupHANDS")
+
+	GUICtrlCreateButton("Update/Install HANDS Box", 50, 150, 300, 50)
+	GUICtrlSetOnEvent(-1, "UpdateInstall")
 
 
 EndFunc
 
+Func UpdateInstall()
+	Run(@ComSpec & " /c " & $updateInstallScript)
+	Exit 1
+EndFunc
+
 Func HANDSBoxBottomButtons()
-	GUICtrlCreateButton("Synchronize", 1, 550, 180, 40)
-	GUICtrlSetOnEvent(-1, "RunSynchronize")
-	GUICtrlCreateButton("Advanced Compare/Sync", 600, 550, 195, 40)
-	GUICtrlSetOnEvent(-1, "EditSynchronize")
+
+    if $showSyncButtons = "Sync" or $showSyncButtons = "Both" Then
+		GUICtrlCreateButton("Synchronize", 1, 550, 180, 40)
+		GUICtrlSetOnEvent(-1, "RunSynchronize")
+	EndIf
+
+    if $showSyncButtons = "Both" Then
+		GUICtrlCreateButton("Advanced Compare/Sync", 600, 550, 195, 40)
+		GUICtrlSetOnEvent(-1, "EditSynchronize")
+	EndIf
 
 EndFunc
 
@@ -154,11 +181,7 @@ Func RunSynchronize()
 		Return 1
 	EndIf
 	HANDSLog("Sync","")
-	If FileExists($handsAppData & "editsync.lock") Then
-	    FileDelete($handsAppData & "editsync.lock")
-    EndIf
-	FileInstall("Sync HANDS Box.ffs_batch",$handsAppData & "Sync HANDS Box.ffs_batch")
-	ShellExecute($handsAppData & "Sync HANDS Box.ffs_batch")
+	ShellExecute($syncScript)
 EndFunc
 
 Func EditSynchronize()
@@ -166,10 +189,6 @@ Func EditSynchronize()
 		Return 1
 	EndIf
 	HANDSLog("EditSync","")
-	FileInstall("Sync HANDS Box.ffs_batch",$handsAppData & "Sync HANDS Box.ffs_batch")
-	ShellExecute($handsAppData & "Sync HANDS Box.ffs_batch","","",$SHEX_EDIT)
-	$f = FileOpen($handsAppData & "editsync.lock",$FO_OVERWRITE)
-	FileWrite($f,"TRUE")
-	FileClose($f)
+	ShellExecute($advancedSyncScript,"","",$advancedSyncScriptVerb)
 	Exit 1
 EndFunc
