@@ -521,6 +521,8 @@ Func RunMain()             ; MAIN HANDS BOX WINDOW
 	GUICtrlSetOnEvent(-1, "ViewWorkInProgress")
 	GUICtrlCreateButton("Queue to Supervisor", 380, 410, 200, 30)
 	GUICtrlSetOnEvent(-1, "QueueToSupervisor")
+	GUICtrlCreateButton("Corrections to Supervisor", 380, 495, 200, 30)
+	GUICtrlSetOnEvent(-1, "CorrectionsToSupervisor")
 
 	If $HANDSRole = "Supervisor" Then
 		GUICtrlCreateButton("Queue to Data Processing", 580, 410, 200, 30)
@@ -915,6 +917,14 @@ EndFunc   ;==>QueueToDataProcessing
 Func QueueToSupervisor()                ; INITIATE QUEUE TO SUPERVISOR
 	; Triggered from the Home Visitor screen. Move files to the Supervisor folder, and make a backup copy.
 	$src = $rootPath & $workBase & $workingPath
+	$dst = $rootPath & $workBase & $tosupervisorPath
+	QueueToFolder($src,$dst,"to supervisor",True)
+	RefreshMain()
+EndFunc   ;==>QueueToSupervisor
+
+Func CorrectionsToSupervisor()                ; INITIATE QUEUE TO SUPERVISOR
+	; Triggered from the Home Visitor screen. Move files to the Supervisor folder, and make a backup copy.
+	$src = $rootPath & $workBase & $correctionPath
 	$dst = $rootPath & $workBase & $tosupervisorPath
 	QueueToFolder($src,$dst,"to supervisor",True)
 	RefreshMain()
