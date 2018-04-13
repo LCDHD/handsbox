@@ -114,7 +114,7 @@ Func SetupHANDS()
     CreateUserFolders()
 
 	If Not FileExists($rootPath & $formsPath & "\English") Then
-		CreateTemplateFolders()
+		;CreateTemplateFolders()
 		MsgBox(0,"HANDS Box","Please Re-Open the HANDS Box to continue.")
 		Exit
 	EndIf

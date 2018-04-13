@@ -353,7 +353,7 @@ Func LabelCreate()
 	EndIf
 	FileWrite($f, $fullFDF)
 	FileClose($f)
-	FileInstall("forms_src\000 - Blank Label.pdf",$labelsSelectPath & "\",$FC_OVERWRITE)
+	;FileInstall("forms_src\000 - Blank Label.pdf",$labelsSelectPath & "\",$FC_OVERWRITE)
 	LabelCLOSEClicked()
 EndFunc   ;==>LabelCreate
 
@@ -724,11 +724,11 @@ Func CreateUserFolders()   ; Setup User Folder Structure
 
 EndFunc
 
-Func CreateTemplateFolders() ; Setup Master Template Folders
-	DirCopy(@ScriptDir & "\forms",$formsPath)
-	DirCopy(@ScriptDir & "\supervisionforms",$supervisionFormsPath)
+;Func CreateTemplateFolders() ; Setup Master Template Folders
+;	DirCopy(@ScriptDir & "\forms",$formsPath)
+;	DirCopy(@ScriptDir & "\supervisionforms",$supervisionFormsPath)
 
-EndFunc
+;EndFunc
 
 
 ;************************* FOLDER QUEUE FUNCTIONS *****************************
