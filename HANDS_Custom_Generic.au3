@@ -180,7 +180,7 @@ Func RunSynchronize()
     If ProcessCheck() Then
 		Return 1
 	EndIf
-	HANDSLog("Sync","")
+	HANDSLog("Sync","","")
 	ShellExecute($syncScript)
 EndFunc
 
@@ -188,7 +188,7 @@ Func EditSynchronize()
     If ProcessCheck() Then
 		Return 1
 	EndIf
-	HANDSLog("EditSync","")
+	HANDSLog("EditSync","","")
 	ShellExecute($advancedSyncScript,"","",$advancedSyncScriptVerb)
 	Exit 1
 EndFunc

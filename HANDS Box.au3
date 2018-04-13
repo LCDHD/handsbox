@@ -86,13 +86,19 @@ RunMain()
 
 ;**************************** HELPER FUNCTIONS ********************************
 
-Func HANDSLog($function,$message) ; WRITE ACTIVITY TO A LOG FILE
-	$logfile = $handsAppData & "Logs\" & @ComputerName & "_" & @UserName & "_" & @YEAR & @MON & "_log.csv"
-	$datetime = @YEAR & "-" & @MON & "-" & @MDAY & " " & @HOUR & ":" & @MIN & ":" & @SEC
-	$line = '"' & $datetime & '","' & $function & '","' & $message & '","' & @UserName & '"' & @CRLF
+
+Func HANDSLogToFile($function,$message,$file,$base,$datetime) ; WRITE ACTIVITY TO A LOG FILE
+	$logfile = $base & @ComputerName & "_" & @UserName & "_" & @YEAR & @MON & "_log.csv"
+	$line = '"' & $datetime & '","' & $function & '","' & $message & '","' & $file & '","' & @UserName & '"' & @CRLF
 	$lf = FileOpen($logfile,$FO_APPEND + $FO_CREATEPATH)
 	FileWrite($lf,$line)
 	FileClose($lf)
+EndFunc
+
+Func HANDSLog($function,$message,$file) ; LOG to two separate log files
+	$datetime = @YEAR & "-" & @MON & "-" & @MDAY & " " & @HOUR & ":" & @MIN & ":" & @SEC
+	HANDSLogToFile($function,$message,$file,$handsAppData & "Logs\",$datetime)
+	HANDSLogToFile($function,$message,$file,$rootPath & $workBase & $logPath & "\",$datetime)
 EndFunc
 
 Func countPath($path)       ; COUNT PDF FILES AT A GIVEN PATH
@@ -314,7 +320,7 @@ Func LabelCreate()
 
 	; Delete old label before creating new one
 	if Not $labelEdit = "" Then
-		HANDSLog("Edit Label","Removing Label " & $labelEdit)
+		HANDSLog("Edit Label","Removing Label " & $labelEdit,$labelEdit)
 		FileDelete($labelEdit)
 	EndIf
 	; GENERATE A NEW FDF FILE (LABEL) WITH DATA ENTERED ON NEW LABEL FORM
@@ -340,7 +346,7 @@ Func LabelCreate()
 	$fullFDF = CreateFDF("000 - Blank Label.pdf",$aFields,$aValues)
 
 	$dstFile = $labelsSelectPath & "\" & guictrlRead($labelFields[4]) & ", " & guictrlRead($labelFields[5]) & " " & guictrlRead($labelFields[6]) & ".fdf"
-	HANDSLog("Create Label",guictrlRead($labelFields[4]) & ", " & guictrlRead($labelFields[5]) & " " & guictrlRead($labelFields[6]) & ".fdf")
+	HANDSLog("Create Label",guictrlRead($labelFields[4]) & ", " & guictrlRead($labelFields[5]) & " " & guictrlRead($labelFields[6]) & ".fdf",$dstFile)
 	$f = FileOpen($dstFile, $FO_BINARY + $FO_OVERWRITE)
 	If @error > 0 Then
 		MsgBox(0, "Error", "There was a problem creating the label.")
@@ -370,7 +376,7 @@ Func RunMain()             ; MAIN HANDS BOX WINDOW
 	EndIf
 	$HANDSRole = IniRead($iniFile,"General","Role","Home Visitor")
 
-	HANDSLog("HANDSBox","Open")
+	HANDSLog("HANDSBox","Open",'')
 
     HANDSInit()
 
@@ -550,13 +556,15 @@ Func RunMain()             ; MAIN HANDS BOX WINDOW
 	GUICtrlCreateTabItem("Setup")
 	; Setup
 
-	GUICtrlCreateButton("Options...", 50, 50, 300, 50)
+	GUICtrlCreateButton("Select HANDS Box Mode", 50, 50, 300, 50)
 	GUICtrlSetOnEvent(-1, "SetOptions")
 	HANDSSetupScreen()
 	GUICtrlCreateButton("Unlock a PDF", 350, 50, 300, 50)
 	GUICtrlSetOnEvent(-1, "UnlockPDF")
 	GUICtrlCreateButton("Repair PDF Form", 350, 100, 300, 50)
 	GUICtrlSetOnEvent(-1, "FixPDFForm")
+	GUICtrlCreateButton("Restore File from Backup", 350, 150, 300, 50)
+	GUICtrlSetOnEvent(-1, "RestoreBackupFile")
 
     ;**************************************************************************
     ;Lower Panel
@@ -700,7 +708,7 @@ Func CLOSEClicked()       ; Cleanup and Exit the HANDS Box
 	EndIf
 	CheckBlankFiles()
 	FileDelete(@TempDir & "\HANDS_FDF_*.fdf")
-	HANDSLog("HANDSBox","Close")
+	HANDSLog("HANDSBox","Close",'')
 	Exit
 EndFunc   ;==>CLOSEClicked
 
@@ -711,6 +719,7 @@ Func CreateUserFolders()   ; Setup User Folder Structure
 	DirCreate($rootPath & $workBase & $labelsPath)
 	DirCreate($rootPath & $workBase & $tosupervisorPath)
 	DirCreate($rootPath & $workBase & $todataPath)
+	DirCreate($rootPath & $workBase & $logPath)
 	DirCreate($rootPath & $formsPath)
 
 EndFunc
@@ -855,7 +864,9 @@ Func QueueToFolderFinish()              ; FINALIZE FILE QUEUE AND MOVE FILES
 	while $i < $aForms[0]
 		$i += 1
 		If _GUICtrlListView_GetItemChecked($HANDSFolderList,$i-1) Then
-			FileCopy($src & "\" & $aForms[$i],$handsAppData & "FormBackup\" & @YEAR & @MON & "\" & $aForms[$i],$FC_CREATEPATH)
+			$backupdst = "FormBackup\" & @YEAR & @MON & "\" & $aForms[$i] & "." & @MON & @MDAY & @HOUR & @MIN & @SEC
+			HANDSLog('Queue',$purpose & ' (' & $dst & ')',$backupdst)
+			FileCopy($src & "\" & $aForms[$i],$handsAppData & $backupdst,$FC_CREATEPATH)
 			FileSetAttrib($handsAppData & "FormBackup\" & @YEAR & @MON & "\" & $aForms[$i],"+R")
 			If FileMove($src & "\" & $aForms[$i],$dst & "\" & $aForms[$i]) = 0 Then
 				MsgBox(0,"HANDS Box","Cannot move " & $aForms[$i])
@@ -1017,14 +1028,14 @@ Func FileToCharts()                     ; FILE QUEUED FORMS INTO THE CHARTS, BAS
 			; There is no matching chart folder. We'll count this as un-fileable and move on.
 			$cantfile += 1
 		Else
-			HANDSLog("Chart Filing","Filing '" & $path & "' to '" & $chartfolders[$folderindex] & "'")
+			HANDSLog("Chart Filing","Filing: " & $path,$chartfolders[$folderindex])
 	        ProgressSet(10+($chartnum*80/$formsToFile[0]),"Filing Form: " & $path)
 			If Not FileMove($rootPath & $workBase & $queueToChart & "\" & $path,$chartfolders[$folderindex]) Then
 				$err = @error
 				$cantfile += 1
 				ProgressOff()
 				RefreshMain()
-			    HANDSLog("Chart Filing Error","Error Filing '" & $path & "' to '" & $chartfolders[$folderindex] & "'")
+			    HANDSLog("Chart Filing Error","Error Filing: " & $path,$chartfolders[$folderindex])
 				MsgBox(0,"HANDS Supervisor Functions","Could not move form '" & $path & "' to '" & $chartfolders[$folderindex] & "'. Error: " & $err & @CRLF & "I will stop filing charts now until this is resolved.")
 				Return 1
 			EndIf
@@ -1034,7 +1045,7 @@ Func FileToCharts()                     ; FILE QUEUED FORMS INTO THE CHARTS, BAS
 	RefreshMain()
 	ProgressOff()
 	if $cantfile > 0 Then
-		HANDSLog("Chart Filing","Could not file " & $cantfile & " charts")
+		HANDSLog("Chart Filing","Could not file " & $cantfile & " to charts",$cantfile)
 		MsgBox(0,"HANDS Supervisor Functions","Could not file " & $cantfile & " forms into the charts. Please check to make sure the names match the forms.")
 	EndIf
 EndFunc
@@ -1062,7 +1073,7 @@ Func DeleteLabel()                      ; DELETE SELECTED LABEL
 	EndIf
 	$labelSelected = $labels[$labelIndexSelected + 1]
 	If MsgBox($MB_YESNO,"Confirm","Are you sure you want to delete the label: " & $labelSelected & "?") = $IDYes Then
-		HANDSLog("Delete Label",$labelSelected)
+		HANDSLog("Delete Label",$labelSelected,'')
 		FileDelete($labelsSelectPath & "\" & $labelSelected)
 		RefreshMain()
 	EndIf
@@ -1143,7 +1154,7 @@ Func CheckBlankFiles()              ; Check through remembered files for blank f
 				    Return False
 				EndIf
 			EndIf
-			HANDSLog("DeleteBlank",$formsCopied[$i])
+			HANDSLog("DeleteBlank",'Deleting Blank Form',$formsCopied[$i])
 			FileDelete($formsCopied[$i])
 		EndIf
 		$i += 1
@@ -1201,7 +1212,7 @@ Func CreateForm($labelSelected,$templateSelected,$date)   ; CREATE FORM FROM SEL
 	;OpenFDF($TempFDFName,$rootPath & $workBase & $workingPath & "\" & $workingFilename)
 
 	; Create the new PDF file using the FDF file info
-	HANDSLog("Create Forms",$workingFilename)
+	HANDSLog("Create Forms",'Creating New Form',$workingFilename)
 	RunWait('"' & $pdftk & '" "' & $templateFile & '" fill_form "' & $TempFDFName & '" output "' & $finalPDF & '"',"",@SW_HIDE)
 	FileDelete($TempFDFName)
 
@@ -1514,4 +1525,41 @@ Func FixPDFForm()             ; Use PdfTk to extract and re-apply form data, to 
 	ShellExecute($fname)
 
 
+EndFunc
+
+Func RestoreBackupFile()
+	; Allow user to select files from hidden backup and restore (copy) them back to the working folder.
+	$files = FileOpenDialog("Select File(s) to restore",$handsAppData & "FormBackup\","All Files (*.*)",$FD_FILEMUSTEXIST+$FD_PATHMUSTEXIST+$FD_MULTISELECT)
+	If Not $files Then
+		Return 1
+	EndIf
+	dim $aFiles[1]
+	$aFiles[0] = $files
+	If StringInStr($files,"|") Then
+		_ArrayPop($aFiles)
+	    $compactFiles = StringSplit($files,"|")
+		For $i = 2 To Ubound($compactFiles) - 1
+			_ArrayAdd($aFiles,$compactFiles[1] & "\" & $compactFiles[$i])
+		Next
+	EndIf
+
+	dim $sFilePath = ''
+	dim $sDrive = ''
+	dim $sDir = ''
+	dim $sFileName = ''
+	dim $sExtension = ''
+	For $i = 0 to Ubound($aFiles) - 1
+		_PathSplit($aFiles[$i],$sDrive,$sDir,$sFileName,$sExtension)
+		$dst = $rootPath & $workBase & $workingPath & "\" & $sFileName
+		if Not StringRegExp($sExtension,"\d") Then
+		    $dst = $dst & $sExtension
+		EndIf
+		If FileCopy($aFiles[$i],$dst) Then
+			FileSetAttrib($dst,"-R")
+	    Else
+			MsgBox(0,"HANDS Box","Could not copy: " & $sFileName)
+	    EndIf
+	Next
+    RefreshMain()
+    ShellExecute($rootPath & $workBase & $workingPath)
 EndFunc
