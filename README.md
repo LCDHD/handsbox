@@ -32,23 +32,46 @@ This has been tested with the following:
 - [Master PDF Editor](https://code-industry.net/masterpdfeditor/)
 
 ## Quick Start
-
-- The default configuration assumes that all deployment files are copied to
-  `Documents\Hands Briefcase\HANDS Documents\Software`
-- Run `HANDS Box.exe` and choose the option to 'Install'
-- Navigate to the `Setup` tab and choose "Setup Folders"
+- Download the latest HANDS Box Release.zip from 
+  [Releases](https://github.com/LCDHD/handsbox/releases)
+- Extract the zip file to your local machine. The configuration assumes 
+  placing `HANDS Briefcase` inside your `Documents` folder.
+- If you're using Nextcloud, place the contents of `HANDS Briefcase` into
+  your `Nextcloud` folder.
+- If using a Windows File share, the scripts assume you will map the network
+  drive to `H:`
+- Open `HANDS Documents\Software\hands_defaults.ini`
+    - Uncomment relevant lines and adjust paths for your environment.
+- Open `HANDS Documents\Software\updateinstall.cmd`
+    - Change paths to match your environment.
+- Use FreeFileSync to "Edit" the `Sync HANDS Box.ffs_batch` file. Adjust 
+  according to your environment.
+- Run `updateinstall.cmd` to install the HANDS Box into your `%appdata%` path.
+- Launch `HANDS Box` from the new Desktop shortcut.
+- Answer the questions to set the mode, then re-launch the HANDS Box.
+- Experiment by creating labels, forms, packets, and "queueing" to different
+  staff.
+- _More User Documentation Coming Soon!_
 
 # Software Overview and Tools
 
 ## Folder Structure
 
-On each laptop, there should be a folder structure something like this. The
-Working structure will be created automatically by the HANDS Box on first run.
+On each laptop, there should be a folder structure something like this. 
 
 - Documents\HANDS Briefcase
   - Charts.Region1
   - Charts.Region2
   - HANDS Documents *(synced down from server)*
+   - Forms
+      - English
+        - ABC 101 - Parent Entry Form [A].pdf
+        - ABC 102 - Parent Exit Form [A].pdf
+        - ADM 100 - Entry Packet [A].txt
+      - Spanish
+      - billingcodes.txt
+    - Software
+    - Supervision Forms
   - Working.MyWindowsUsername *(two-way synced with server)*
     - Labels
     - Needs Correction
@@ -67,22 +90,6 @@ Alternatively, set up a file share on a central server and map to each
 client laptop, e.g.
 
     net use H: \\server\HANDS /persistent:yes
-
-Your complete file share will look something like this. You can
-  - Charts.Region1
-  - Charts.Region2
-  - HANDS Documents
-    - Forms
-      - English
-        - ABC 101 - Parent Entry Form [A].pdf
-        - ABC 102 - Parent Exit Form [A].pdf
-        - ADM 100 - Entry Packet [A].txt
-      - Spanish
-      - billingcodes.txt
-    - Software
-    - Supervision Forms
-  - Working.Mary.Staff
-  - Working.Jane.Staff
 
 Working folder names should exactly match the usernames of the logged in users
 on each laptop
