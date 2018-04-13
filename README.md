@@ -1,18 +1,22 @@
 # handsbox
-Folder-based Electronic Forms Records for Kentucky HANDS Program
+Folder-based Electronic Forms Records for Kentucky HANDS Program.
 
-#In order to *use* the HANDS Box, you will need:
-- A file share for storing charts and working files. Nextcloud or Owncloud
-  are good options. You can also use this using a regular Windows file share
+## In order to *use* the HANDS Box, you will need:
+- A file share for storing charts and working files. If you can set up 
+  or have access to a secure web server, you might consider:
+    - [Nextcloud](https://nextcloud.com/) or [Owncloud](https://owncloud.org/)
+    - Otherwise, you will likely need to use a regular Windows file share,
+      using a Windows file server connected to your domain, or a
+      [Samba](https://www.samba.org/) based file server.
+      
 - If you choose to store the charts and working files on a Windows file share,
-  you will need to install
-  FreeFileSync(https://www.freefilesync.org/download.php)
-  or some other similar software, such as
-  MinFFS(https://github.com/abcdec/MinFFS). The HANDS Box has been tested with
-  both of these. Any other software that will keep folders in sync should
-  work fine, such as
-  SyncToy(https://www.microsoft.com/en-us/download/details.aspx?id=15155)
-  although we have not testes with these.
+  you will need to install a tool to keep your files in sync, 
+  such as one of these:
+    - FreeFileSync(https://www.freefilesync.org/download.php)
+    - MinFFS(https://github.com/abcdec/MinFFS), an older but completely 
+      free version of FreeFileSync, without malware. 
+    - SyncToy(https://www.microsoft.com/en-us/download/details.aspx?id=15155)
+      (not tested with the HANDS Box)
 
 - You will need a good PDF reader / editor capable of:
     - Filling PDF forms
@@ -27,7 +31,7 @@ This has been tested with the following:
 - [Nuance PowerPDF](https://www.nuance.com/print-capture-and-pdf-solutions/pdf-and-document-conversion/power-pdf-converter.html)
 - [Master PDF Editor](https://code-industry.net/masterpdfeditor/)
 
-# Quick Start
+## Quick Start
 
 - The default configuration assumes that all deployment files are copied to
   `Documents\Hands Briefcase\HANDS Documents\Software`
@@ -61,6 +65,7 @@ GroupFolders app in NextCloud is an excellent option for sharing charts.
 
 Alternatively, set up a file share on a central server and map to each
 client laptop, e.g.
+
     net use H: \\server\HANDS /persistent:yes
 
 Your complete file share will look something like this. You can
@@ -115,7 +120,7 @@ FORM NUMBER - Form Title (Form Date) [CODE].pdf
 In order to build the software, you will need to download
 and install AutoIt, install other prequisites, and compile.
 
-Find details under BUILDING(BUILDING.md)
+Find details under [BUILDING](BUILDING.md)
 
 ## Latest Changes
-Find a list of latest changes in CHANGLOG(CHANGELOG.md)
+Find a list of latest changes in [CHANGLOG](CHANGELOG.md)
