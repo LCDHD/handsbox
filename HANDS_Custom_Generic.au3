@@ -63,8 +63,8 @@ dim $updateInstallScript = getIni("updateInstallScript",@ScriptDir & "\updateins
 
 dim $supervisionPath = getIni("supervisionPath","Supervision")
 dim $labelsSelectPath = getIni("labelsSelectPath",$rootPath & $workBase & $labelsPath)
-dim $checkUpdateFile1 = getIni("checkUpdateFile1",$iniDefaults)
-dim $checkUpdateFile2 = getIni("checkUpdateFile2",$rootPath & "HANDS Documents\Software\hands_defaults.ini")
+dim $checkUpdateFile1 = getIni("checkUpdateFile1","")
+dim $checkUpdateFile2 = getIni("checkUpdateFile2","")
 
 
 ; Field names that should be replaced with values from label
