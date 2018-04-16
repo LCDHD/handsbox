@@ -10,6 +10,21 @@ copy "%SRC%\HANDS Box.lnk" "%userprofile%\Desktop\HANDS Box.lnk"
 rem Stop any running HANDS Box
 taskkill /IM "HANDS Box.exe"
 
+rem Wait a bit
+ping 127.0.0.1
+
+rem Forcefully stop any running HANDS Box
+taskkill /f /IM "HANDS Box.exe"
+
+rem Wait a bit more
+ping 127.0.0.1
+
+rem Delete the old HANDS Box
+del  "%DST%\HANDS Box.exe" /f
+
+rem Wait a bit for Windows to catch up
+ping 127.0.0.1
+
 rem Copy program files one by one
 copy "%SRC%\HANDS Box.exe" "%DST%\HANDS Box.exe" /Y
 copy "%SRC%\pdftk.exe" "%DST%\pdftk.exe" /Y
