@@ -22,3 +22,4 @@
 ### Troubleshooting
 * [Fix Missing Digital ID](https://youtu.be/mMMGk9tbh7I)
 * [FreeFileSync Errors & Conflicts](https://youtu.be/zRBnfiQUwTk)
+* [Re-connect Nextcloud / Login Again](https://youtu.be/t0F60QqOluw)
