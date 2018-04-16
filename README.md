@@ -51,7 +51,10 @@ This has been tested with the following:
 - Answer the questions to set the mode, then re-launch the HANDS Box.
 - Experiment by creating labels, forms, packets, and "queueing" to different
   staff.
-- _More User Documentation Coming Soon!_
+  
+## Video Demos
+* See the [Video Demos](VIDEOS.md) page for a visual demonstration of
+  using the HANDS Box.
 
 # Software Overview and Tools
 
