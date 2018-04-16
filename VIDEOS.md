@@ -21,3 +21,4 @@
 
 ### Troubleshooting
 * [Fix Missing Digital ID](https://youtu.be/mMMGk9tbh7I)
+* [FreeFileSync Erros & Conflicts](https://youtu.be/zRBnfiQUwTk)
