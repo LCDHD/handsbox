@@ -4,6 +4,8 @@ rem Modify these as appropriate for your environment
 SET SRC=%userprofile%\Documents\HANDS Briefcase\HANDS Documents\Software
 SET DST=%appdata%\HANDSBox
 
+mkdir "%DST%"
+
 rem Install the desktop shortcut
 copy "%SRC%\HANDS Box.lnk" "%userprofile%\Desktop\HANDS Box.lnk"
 
